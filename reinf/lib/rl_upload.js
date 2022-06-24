@@ -54,6 +54,39 @@ function sampleWeighted(p) {
     assert(false, 'wtf');
 }
 
+var upload_complete = 0;
+var contents;
+const readUploadedFileAsText = (inputFile) => {
+    const temporaryFileReader = new FileReader();
+  
+    return new Promise((resolve, reject) => {
+        temporaryFileReader.onerror = () => {
+            temporaryFileReader.abort();
+            reject(new DOMException("Problem parsing input file."));
+        };
+    
+        temporaryFileReader.onload = () => {
+            resolve(temporaryFileReader.result);
+        };
+        temporaryFileReader.readAsText(inputFile);
+    });
+};
+  
+  const handleUpload = async (event) => {
+    const file = event.target.files[0];
+    const fileContentDiv = document.querySelector('div#file-content')
+  
+    try {
+        const fileContents = await readUploadedFileAsText(file)  
+        contents = fileContents
+        upload_complete = 1;
+        console.log(contents)
+        fileContentDiv.innerHTML = fileContents
+    } catch (e) {
+        fileContentDiv.innerHTML = e.message
+    }
+}
+  
 class Environment{
     constructor() {
         this.lines = null;
@@ -61,39 +94,17 @@ class Environment{
         this.Exits = null;
         this.Rarr = null; // reward array
         this.T = null; // cell types, 0 = normal, 1 = cliff
-        this.example();
-        //document.querySelector('input#primary-file-upload').addEventListener('change', this.handleUpload)
-        //setTimeout(this.reset, 10000);
-    }
-    readUploadedFileAsText = (inputFile) => {
-        const temporaryFileReader = new FileReader();
-      
-        return new Promise((resolve, reject) => {
-            temporaryFileReader.onerror = () => {
-                temporaryFileReader.abort();
-                reject(new DOMException("Problem parsing input file."));
-            };
-        
-            temporaryFileReader.onload = () => {               
-                this.lines = temporaryFileReader.result.split(/\r?\n/);  
-                resolve(temporaryFileReader.result);
-            };
-            temporaryFileReader.readAsText(inputFile);
-        });
-    };
-    handleUpload = async (event) => {
-        const file = event.target.files[0];
-        const fileContentDiv = document.querySelector('div#file-content')
-        try {
-            const fileContents = await this.readUploadedFileAsText(file)
-            this.lines = fileContents.split(/\r?\n/);  
-            console.log(this.lines);
-            fileContentDiv.innerHTML = fileContents
-        } catch (e) {
-            fileContentDiv.innerHTML = e.message
-        }
+        document.querySelector('input#primary-file-upload').addEventListener('change', handleUpload)
+        if (upload_complete == 0) {
+            this.example();
+        } else {
+            this.reset();
+        }   
     }
     reset() {
+        console.log(contents)
+        this.lines = contents.split(/\r?\n/);
+        console.log(this.lines)
         if (this.lines.length != 4) {
             assert(false, 'Invalid Input');
         }

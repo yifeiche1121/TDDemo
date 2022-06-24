@@ -32,11 +32,8 @@
   </script>
    -->
 
-   <link href="example.css" rel="stylesheet" type="text/css">
-    <script src="draggable_piechart.js"></script>
-    
   <!-- rljs -->
-  <script type="text/javascript" src="lib/rl_re.js"></script>
+  <script type="text/javascript" src="lib/rl_upload.js"></script>
 
   <!-- flotjs -->
   <script src="external/jquery.flot.min.js"></script>
@@ -128,21 +125,41 @@ spec.beta = 0.1; // learning rate for smooth policy update
    <button class="btn btn-success" onclick="gonormal()" style="width:120px;height:50px;margin-bottom:5px;">Go normal</button>
    <button class="btn btn-success" onclick="goslow()" style="width:120px;height:50px;margin-bottom:5px;">Go slow</button>
    <button class="btn btn-primary" onclick="tdlearn()" style="width:120px;height:50px;margin-bottom:5px;">Step</button>
-
-</div>
+   
    <br>
    Exploration epsilon: <span id="eps">0.15</span> <div id="slider"></div>
    <br><br>
+    Correct Action Rate : <input onblur="findTotal()" type="text" name="qty" id="qty1"/><br>
+    Opposite Action Rate : <input onblur="findTotal()" type="text" name="qty" id="qty2"/><br>
+    Left Action Rate : <input onblur="findTotal()" type="text" name="qty" id="qty3"/><br>
+    Right Action Rate : <input onblur="findTotal()" type="text" name="qty" id="qty4"/><br>
+    <br><br>
+    <script type="text/javascript">
+    function assert(condition, message) {
+        // from http://stackoverflow.com/questions/15313418/javascript-assert
+        if (!condition) {
+            message = message || "Assertion failed";
+            if (typeof Error !== "undefined") {
+                throw new Error(message);
+            }
+            throw message; // Fallback
+        }
+    }
+    function findTotal(){
+        var arr = document.getElementsByName('qty');
+        var tot=0;
+        for(var i=0;i<arr.length;i++){
+            if(parseInt(arr[i].value))
+                tot += parseInt(arr[i].value);
+                if (tot != 1) {
+                  assert(false, "Invalid Input");
+                }
+        }
+    }
+    </script>
 
    <div id="draw"></div>
-   <div id="piechart-controls">
-    <canvas id="piechart" width="300" height="300">Your browser is too old!</canvas>
-    <br>
-    <table id="proportions-table"></table>
-    <br>
-    <p id="piechart-instructions">
-        Error Rates
-    </p>
+
    <div id="rewardui">
    Cell reward: <span id="creward">(select a cell)</span> <div id="rewardslider"></div>
    </div>

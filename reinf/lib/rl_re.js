@@ -55,12 +55,10 @@ function sampleWeighted(p) {
 }
 
 var contents;
-async function getMaze() {
+async function readFile() {
     var url = 'example_maze.txt';
-    console.log(url);
     try {
         let res = await fetch(url);
-        console.log("after fetch");
         return await res.text().then(function (text) {
             contents = text;
             console.log("text=", text);
@@ -70,7 +68,9 @@ async function getMaze() {
     }
 }
 
-
+async function getMaze() {
+    await readFile();
+}
 
 class Environment{
     constructor() {
@@ -80,12 +80,14 @@ class Environment{
         this.Rarr = null; // reward array
         this.T = null; // cell types, 0 = normal, 1 = cliff
         this.errorRates = null;
-        //this.example();
-        getMaze();
-        setTimeout(this.reset, 5000);
+        this.example();
+        //getMaze();
+        //this.reset();
+        //setTimeout(this.reset, 5000);
     }
-    
-    reset() {
+    async reset() {
+        const response = await fetch('example_maze.txt');
+        const contents = await response.text();
         this.lines = contents.split(/\r?\n/);
         console.log(this.lines);
         if (this.lines.length != 4) {
@@ -114,30 +116,32 @@ class Environment{
     }
     example() {
         // hardcoding one gridworld for now
-        this.gh = 5;
-        this.gw = 4;
+        this.gh = 4;
+        this.gw = 10;
         this.gs = this.gh * this.gw; // number of states
         // specify some rewards
         var Rarr = zeros(this.gs);
         var T = zeros(this.gs);
         var Exits = zeros(this.gs);
-        this.rewardSpot = 15;
+        this.rewardSpot = 32;
         Rarr[this.rewardSpot] = 1;
+        Rarr[20] = -2;
         Exits[this.rewardSpot] = 1;
 
         // make some cliffs
-        T[1*this.gh] = 1;
-        T[1*this.gh+1] = 1;
-        T[1*this.gh+2] = 1;
-        T[1*this.gh+3] = 1;
+        //T[1*this.gh] = 1;
+        //T[1*this.gh+1] = 1;
+        //T[1*this.gh+2] = 1;
+        //T[1*this.gh+3] = 1;
 
-        T[3*this.gh+1] = 1;
-        T[3*this.gh+2] = 1;
-        T[3*this.gh+3] = 1;
-        T[3*this.gh+4] = 1;
+        //T[3*this.gh+1] = 1;
+        //T[3*this.gh+2] = 1;
+        //T[3*this.gh+3] = 1;
+        //T[3*this.gh+4] = 1;
         this.Exits = Exits;
         this.Rarr = Rarr;
         this.T = T;
+        
     }
     reward(s) {
         // reward of being in s, taking action a, and ending up in ns
@@ -155,10 +159,56 @@ class Environment{
             var nx, ny;
             var x = this.stox(s);
             var y = this.stoy(s);
-            if(a == 0) {nx = x - 1; ny = y;}
-            if(a == 1) {nx = x; ny = y - 1;}
-            if(a == 2) {nx = x; ny = y + 1;}
-            if(a == 3) {nx = x + 1; ny = y;}
+            var rate = Math.random();
+            console.log(this.errorRates);
+            var cr = this.errorRates[0];
+            var lr = this.errorRates[1];
+            var rr = this.errorRates[2];
+            var or = this.errorRates[3];
+            if (a == 0) {
+                if (rate < cr) {
+                    nx = x - 1; ny = y;
+                } else if (rate > cr && rate < cr + lr) {
+                    nx = x; ny = y + 1;
+                } else if (rate > cr + lr && rate < cr + lr + rr) {
+                    nx = x; ny = y - 1;
+                } else if (rate > 1 - or) {
+                    nx = x + 1; ny = y;
+                }   
+            }
+            if (a == 1) {
+                if (rate < cr) {
+                    nx = x; ny = y - 1;
+                } else if (rate > cr && rate < cr + lr) {
+                    nx = x - 1; ny = y;
+                } else if (rate > cr + lr && rate < cr + lr + rr) {
+                    nx = x + 1; ny = y;
+                } else if (rate > 1 - or) {
+                    nx = x; ny = y + 1;
+                }     
+            }
+            if (a == 2) {
+                if (rate < cr) {
+                    nx = x; ny = y + 1;
+                } else if (rate > cr && rate < cr + lr) {
+                    nx = x + 1; ny = y;
+                } else if (rate > cr + lr && rate < cr + lr + rr) {
+                    nx = x - 1; ny = y;
+                } else if (rate > 1 - or) {
+                    nx = x; ny = y - 1;
+                }     
+            }
+            if (a == 3) {
+                if (rate < cr) {
+                    nx = x + 1; ny = y;
+                } else if (rate > cr && rate < cr + lr) {
+                    nx = x; ny = y - 1;
+                } else if (rate > cr + lr && rate < cr + lr + rr) {
+                    nx = x; ny = y + 1;
+                } else if (rate > 1 - or) {
+                    nx = x - 1; ny = y;
+                }   
+            }
             var ns = nx * this.gh + ny;
             //if(this.T[ns] == 1) {
                 // actually never mind, this is a wall. reset the agent
