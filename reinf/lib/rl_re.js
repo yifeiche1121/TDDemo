@@ -54,62 +54,57 @@ function sampleWeighted(p) {
     assert(false, 'wtf');
 }
 
-var contents;
-async function readFile() {
-    var url = 'example_maze.txt';
-    try {
-        let res = await fetch(url);
-        return await res.text().then(function (text) {
-            contents = text;
-            console.log("text=", text);
-        });
-    } catch (error) {
-        console.log(error);
-    }
-}
 
-async function getMaze() {
-    await readFile();
-}
 
 class Environment{
     constructor() {
-        this.lines = null;
+        this.maze_specs = null;
         this.wh = null;
         this.Exits = null;
         this.Rarr = null; // reward array
         this.T = null; // cell types, 0 = normal, 1 = cliff
         this.errorRates = null;
-        this.example();
+        //this.example();
         //getMaze();
         //this.reset();
         //setTimeout(this.reset, 5000);
     }
     async reset() {
-        const response = await fetch('example_maze.txt');
+        //var url = document.getElementById("url");
+        var url = "maze2.json";
+        const response = await fetch(url);
         const contents = await response.text();
-        this.lines = contents.split(/\r?\n/);
-        console.log(this.lines);
-        if (this.lines.length != 4) {
+        const maze_specs = JSON.parse(contents);
+        console.log(maze_specs)
+        
+        this.wh = maze_specs.wh;
+        this.Exits = maze_specs.Exits;
+        this.Rarr = maze_specs.Rewards;
+        this.T = maze_specs.Walls;
+        /*
+        this.maze_specs = contents.split(/\r?\n/);
+        console.log(this.maze_specs);
+        if (this.maze_specs.length != 4) {
             assert(false, 'Invalid Input');
         }
-        this.wh = this.lines[0].split(' ');
+        this.wh = this.maze_specs[0].split(' ');
         for (var i = 0; i < this.wh.length; i ++) {
             this.wh[i] = parseInt(this.wh[i]);
         }
         
-        this.Exits = this.lines[1].split(' ');
+        this.Exits = this.maze_specs[1].split(' ');
         for (var i = 0; i < this.Exits.length; i ++) {
             this.Exits[i] = parseInt(this.Exits[i]);
         }
-        this.Rarr = this.lines[2].split(' ');
+        this.Rarr = this.maze_specs[2].split(' ');
         for (var i = 0; i < this.Rarr.length; i ++) {
             this.Rarr[i] = parseInt(this.Rarr[i]);
         }
-        this.T = this.lines[3].split(' ');
+        this.T = this.maze_specs[3].split(' ');
         for (var i = 0; i < this.T.length; i ++) {
             this.T[i] = parseInt(this.T[i]);
         }
+        */
         this.gw = this.wh[0];
         this.gh = this.wh[1];
         this.gs = this.gh * this.gw;
@@ -156,24 +151,31 @@ class Environment{
             var ns = this.startState();
         } else {
         // ordinary space
-            var nx, ny;
-            var x = this.stox(s);
-            var y = this.stoy(s);
-            var rate = Math.random();
+            var rate = Math.random() * 100;
+            console.log(rate)
             console.log(this.errorRates);
             var cr = this.errorRates[0];
             var lr = this.errorRates[1];
             var rr = this.errorRates[2];
             var or = this.errorRates[3];
+            var nx, ny;
+            var x = this.stox(s);
+            var y = this.stoy(s);
+            if (a == 4) {
+                nx = 0; ny = 0;
+            }
             if (a == 0) {
                 if (rate < cr) {
                     nx = x - 1; ny = y;
                 } else if (rate > cr && rate < cr + lr) {
+                    console.log(2)
                     nx = x; ny = y + 1;
                 } else if (rate > cr + lr && rate < cr + lr + rr) {
                     nx = x; ny = y - 1;
+                    console.log(1)
                 } else if (rate > 1 - or) {
                     nx = x + 1; ny = y;
+                    console.log(3)
                 }   
             }
             if (a == 1) {
@@ -181,10 +183,13 @@ class Environment{
                     nx = x; ny = y - 1;
                 } else if (rate > cr && rate < cr + lr) {
                     nx = x - 1; ny = y;
+                    console.log(0)
                 } else if (rate > cr + lr && rate < cr + lr + rr) {
                     nx = x + 1; ny = y;
+                    console.log(3)
                 } else if (rate > 1 - or) {
                     nx = x; ny = y + 1;
+                    console.log(2)
                 }     
             }
             if (a == 2) {
@@ -192,10 +197,13 @@ class Environment{
                     nx = x; ny = y + 1;
                 } else if (rate > cr && rate < cr + lr) {
                     nx = x + 1; ny = y;
+                    console.log(3)
                 } else if (rate > cr + lr && rate < cr + lr + rr) {
                     nx = x - 1; ny = y;
+                    console.log(0)
                 } else if (rate > 1 - or) {
                     nx = x; ny = y - 1;
+                    console.log(1)
                 }     
             }
             if (a == 3) {
@@ -203,22 +211,37 @@ class Environment{
                     nx = x + 1; ny = y;
                 } else if (rate > cr && rate < cr + lr) {
                     nx = x; ny = y - 1;
+                    console.log(1)
                 } else if (rate > cr + lr && rate < cr + lr + rr) {
                     nx = x; ny = y + 1;
+                    console.log(2)
                 } else if (rate > 1 - or) {
                     nx = x - 1; ny = y;
+                    console.log(0)
                 }   
             }
+            if (nx < 0) { 
+                nx = 0;
+            }
+            if (nx > this.gw - 1) {
+                nx = this.gw - 1;
+            }
+            if (ny < 0) {
+                ny = 0;
+            }
+            if (ny > this.gh - 1) {
+                ny = this.gh - 1;
+            }
             var ns = nx * this.gh + ny;
-            //if(this.T[ns] == 1) {
-                // actually never mind, this is a wall. reset the agent
-                //var ns = s;
-            //}
+            if (this.T[ns] == 1) {
+                return s;
+            }
         }
         // gridworld is deterministic, so return only a single next state
         return ns;
     }
     getLearnReward(s, a) {
+        console.log(a)
         // gridworld is deterministic, so this is easy
         var ns = this.getNextState(s,a);
         var r = this.Rarr[s]; // observe the raw reward of being in s, taking a, and ending up in ns
@@ -235,16 +258,26 @@ class Environment{
         var x = this.stox(s);
         var y = this.stoy(s);
         var as = [];
+        if(this.Exits[s] == 1) {
+            as.push(4);
+            return as;
+        }
+        as.push(0);
+        as.push(1);
+        as.push(2);
+        as.push(3);
+        /*
         if(x > 0 && this.T[this.xytos(x - 1, y)] != 1) { as.push(0); }
         if(y > 0 && this.T[this.xytos(x, y - 1)] != 1) { as.push(1); }
         if(y < this.gh-1 && this.T[this.xytos(x, y + 1)] != 1) { as.push(2); }
         if(x < this.gw-1 && this.T[this.xytos(x + 1, y)] != 1) { as.push(3); }
+        */
         return as;
     }
     randomState() { return Math.floor(Math.random()*this.gs); }
     startState() { return 0; }
     getNumStates() { return this.gs; }
-    getMaxNumActions() { return 4; }
+    getMaxNumActions() { return 5; }
 
     // private functions
     stox(s) { return Math.floor(s/this.gh); }
@@ -263,6 +296,7 @@ class TDAgent{
         this.beta = getopt(opt, 'beta', 0.01); // learning rate for policy, if smooth updates are on
         this.q_init_val = getopt(opt, 'q_init_val', 0); // optional optimistic initial values
         this.planN = getopt(opt, 'planN', 0); // number of planning steps per learning iteration (0 = no planning)
+        this.A = null;
         this.Q = null; // state action value function
         this.P = null; // policy distribution \pi(s,a)
         this.env_model_s = null;; // environment model (s,a) -> (s',r)
@@ -274,6 +308,7 @@ class TDAgent{
         // reset the agent's policy and value function
         this.numStates = this.env.getNumStates();
         this.numActs = this.env.getMaxNumActions();
+        this.A = zeros(this.numStates);
         this.Q = zeros(this.numStates * this.numActs);
         if (this.q_init_val != 0) { 
             setConst(this.Q, this.q_init_val); 
@@ -291,7 +326,11 @@ class TDAgent{
             var poss = this.env.allowedActions(s);
             for (var i = 0; i < poss.length; i ++) {
                 if (this.env.Exits[s] == 1) {
-                    this.P[poss[i] * this.numStates + s] = 0;
+                    if (poss[i] == 4) {
+                        this.P[poss[i] * this.numStates + s] = 1;
+                    } else {
+                        this.P[poss[i] * this.numStates + s] = 0;
+                    }
                 } else {
                     this.P[poss[i] * this.numStates + s] = 1.0 / poss.length;
                 }
@@ -322,10 +361,9 @@ class TDAgent{
             if (Math.random() < this.epsilon) {
                 var a = poss[randi(0, poss.length)]; // random available action
             } else {
+                
                 var a = poss[sampleWeighted(probs)];
             }
-        //}
-        // shift state memory
         this.s0 = this.s1;
         this.a0 = this.a1;
         this.s1 = s;

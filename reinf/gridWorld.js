@@ -64,7 +64,7 @@ var initGrid = function() {
                 g.attr('fill', '#449944')
             }
             if (env.Rarr[s] < 0) {
-                g.attr('fill', '#ff4f00')
+                g.attr('fill', '#ff8100')
             }
             rewardText.text('');
             rewardTexts[s] = rewardText;
@@ -126,14 +126,12 @@ var drawGrid = function() {
             var s = env.xytos(x,y);
             
             // get value of state s under agent policy
-            if (typeof agent.V !== 'undefined') {
-                var vv = agent.V[s];
-            } else if (typeof agent.Q !== 'undefined') {
+            if (typeof agent.Q !== 'undefined') {
                 var poss = env.allowedActions(s);
                 var vv = -1;
                 for (var i = 0; i < poss.length; i ++) {
                     var qsa = agent.Q[poss[i] * gs + s];
-                    if (i === 0 || qsa > vv) { 
+                    if (i == 0 || qsa > vv) { 
                         vv = qsa; 
                     }
                 }
@@ -149,7 +147,7 @@ var drawGrid = function() {
             var grid = grids[s];
             if (env.Exits[s] == 1) {
                 grid.attr('stroke-width', '3');
-                grid.attr('stroke', '#ffa500');
+                grid.attr('stroke', '#fdee00');
             }
             if (s == selected) {
                 // highlight selected cell
@@ -180,11 +178,11 @@ var drawGrid = function() {
                 var prob = agent.P[a * gs + s];
                 if (prob < 0.05) { pa.attr('visibility', 'hidden'); }
                 else { pa.attr('visibility', 'visible'); }
-                var ss = cs/2 * prob * 0.9;
-                if (a == 0) {nx = -ss; ny = 0;}
-                if (a == 1) {nx = 0; ny = -ss;}
-                if (a == 2) {nx = 0; ny = ss;}
-                if (a == 3) {nx = ss; ny = 0;}
+                var arrowlen = cs/2 * prob * 0.9;
+                if (a == 0) {nx = -arrowlen; ny = 0;}
+                if (a == 1) {nx = 0; ny = -arrowlen;}
+                if (a == 2) {nx = 0; ny = arrowlen;}
+                if (a == 3) {nx = arrowlen; ny = 0;}
                 pa.attr('x1', xcoord + cs / 2)
                 .attr('y1', ycoord + cs / 2)
                 .attr('x2', xcoord + cs / 2 + nx)
@@ -454,11 +452,9 @@ var ErrorRates;
 var state;
 var agent, env;
 
-function start() {
+async function start() {
     env = new Environment(); // create environment
-    document.addEventListener("DOMContentLoaded", () => {
-        env.reset().catch(e => console.error(e));
-    });
+    await env.reset();
     env.errorRates = ErrorRates;
     state = env.startState();
     eval($("#agentspec").val())

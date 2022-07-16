@@ -94,10 +94,7 @@
       </div>
       <ul class="nav nav-pills">
         <li role="presentation"><a href="index.html">About</a></li>
-        <li role="presentation"><a href="gridworld_dp.html">GridWorld: DP</a></li>
         <li role="presentation" class="active"><a href="gridworld_td.html">GridWorld: TD</a></li>
-        <li role="presentation"><a href="puckworld.html">PuckWorld: DQN</a></li>
-        <li role="presentation"><a href="waterworld.html">WaterWorld: DQN</a></li>
       </ul>
      </div>
 
@@ -107,7 +104,7 @@
 <textarea id="agentspec" style="width:100%;height:270px;">
 // agent parameter spec to play with (this gets eval()'d on Agent reset)
 var spec = {}
-spec.update = 'qlearn'; // 'qlearn' or 'sarsa'
+spec.update = 'qlearn'; // 'qlearn'
 spec.gamma = 0.9; // discount factor, [0, 1)
 spec.epsilon = 0.2; // initial epsilon for epsilon-greedy policy, [0, 1)
 spec.alpha = 0.1; // value function learning rate
@@ -118,10 +115,7 @@ spec.planN = 50; // number of planning steps per iteration. 0 = no planning
 spec.smooth_policy_update = true; // non-standard, updates policy smoothly to follow max_a Q
 spec.beta = 0.1; // learning rate for smooth policy update
 </textarea>
-   <input id="primary-file-upload" type="file" accept="text/plain" />
-   <div id="file-content">
-    Nothing uploaded yet
-   </div>
+    
    <button class="btn btn-danger" onclick="resetAgent()" style="width:120px;height:50px;margin-bottom:5px;">Reinit agent</button>
    <button class="btn btn-primary" onclick="simulate()" style="width:170px;height:50px;margin-bottom:5px;">Toggle TD Learning</button>
    <button class="btn btn-success" onclick="gofast()" style="width:120px;height:50px;margin-bottom:5px;">Go fast</button>
@@ -130,10 +124,12 @@ spec.beta = 0.1; // learning rate for smooth policy update
    <button class="btn btn-primary" onclick="tdlearn()" style="width:120px;height:50px;margin-bottom:5px;">Step</button>
 
 </div>
+  File Url:
+   <input type = "text" name = "url" id = "url"><br>
    <br>
    Exploration epsilon: <span id="eps">0.15</span> <div id="slider"></div>
    <br><br>
-
+    
    <div id="draw"></div>
    <div id="piechart-controls">
     <canvas id="piechart" width="300" height="300">Your browser is too old!</canvas>
