@@ -70,8 +70,9 @@ class Environment{
         //setTimeout(this.reset, 5000);
     }
     async reset() {
-        //var url = document.getElementById("url");
-        var url = "maze2.json";
+        var url = document.getElementById('url').value;
+        //var url = "maze2.json";
+        console.log(url)
         const response = await fetch(url);
         const contents = await response.text();
         const maze_specs = JSON.parse(contents);
@@ -120,7 +121,7 @@ class Environment{
         var Exits = zeros(this.gs);
         this.rewardSpot = 32;
         Rarr[this.rewardSpot] = 1;
-        Rarr[20] = -2;
+        Rarr[20] = -1;
         Exits[this.rewardSpot] = 1;
 
         // make some cliffs

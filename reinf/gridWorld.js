@@ -452,7 +452,58 @@ var ErrorRates;
 var state;
 var agent, env;
 
-async function start() {
+function start() {
+    env = new Environment(); // create environment
+    env.example();
+    env.errorRates = ErrorRates;
+    state = env.startState();
+    eval($("#agentspec").val())
+    agent = new TDAgent(env, spec);
+    //agent = new RL.ActorCriticAgent(env, {'gamma':0.9, 'epsilon':0.2});
+
+    // slider sets agent epsilon
+    $( "#slider" ).slider({
+        min: 0,
+        max: 1,
+        value: agent.epsilon,
+        step: 0.01,
+        slide: function(event, ui) {
+            agent.epsilon = ui.value;
+            $("#eps").html(ui.value.toFixed(2));
+        }
+    });
+
+    $("#rewardslider").slider({
+        min: -5,
+        max: 5.1,
+        value: 0,
+        step: 0.1,
+        slide: function(event, ui) {
+            if (selected >= 0) {
+            env.Rarr[selected] = ui.value;
+            $("#creward").html(ui.value.toFixed(2));
+            drawGrid();
+            } else {
+            $("#creward").html('(select a cell)');
+            }
+        }
+    });
+
+    $("#eps").html(agent.epsilon.toFixed(2));
+    $("#slider").slider('value', agent.epsilon);
+    env.errorRates = ErrorRates;
+    // render markdown
+    $(".md").each(function(){
+        $(this).html(marked($(this).html()));
+    });
+    renderJax();
+
+    initGrid();
+    drawGrid();
+    initGraph();
+}
+
+async function setUploadEnv() {
     env = new Environment(); // create environment
     await env.reset();
     env.errorRates = ErrorRates;
