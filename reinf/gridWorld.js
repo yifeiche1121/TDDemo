@@ -41,9 +41,18 @@ var initGrid = function() {
             var g = svg.append('g');
             // click callbackfor group
             g.on('click', function(ss) {
-                return function() { cellClicked(ss); } // close over s
+                return function() { 
+                    cellClicked(ss);
+                 } // close over s
             }(s));
-
+            console.log(ifAddWall);
+            if (ifAddWall == 1) {
+                g.on('click', function(ss) {
+                    return function() { 
+                        cellClickedWall(ss);
+                     } // close over s
+                }(s));
+            }
             // set up cell rectangles
             var grid = g.append('rect')
             .attr('x', xcoord)
@@ -106,11 +115,165 @@ var initGrid = function() {
     .attr('id', 'cpos');
 }
 
+function addRow() {
+    env.addRow();
+    env.errorRates = ErrorRates;
+    state = env.startState();
+    eval($("#agentspec").val())
+    agent = new TDAgent(env, spec);
+    //agent = new RL.ActorCriticAgent(env, {'gamma':0.9, 'epsilon':0.2});
+
+    // slider sets agent epsilon
+    $( "#slider" ).slider({
+        min: 0,
+        max: 1,
+        value: agent.epsilon,
+        step: 0.01,
+        slide: function(event, ui) {
+            agent.epsilon = ui.value;
+            $("#eps").html(ui.value.toFixed(2));
+        }
+    });
+
+    $("#rewardslider").slider({
+        min: -5,
+        max: 5.1,
+        value: 0,
+        step: 0.1,
+        slide: function(event, ui) {
+            if (selectedR >= 0) {
+            env.Rarr[selectedR] = ui.value;
+            $("#creward").html(ui.value.toFixed(2));
+            drawGrid();
+            } else {
+            $("#creward").html('(select a cell)');
+            }
+        }
+    });
+
+    $("#eps").html(agent.epsilon.toFixed(2));
+    $("#slider").slider('value', agent.epsilon);
+    env.errorRates = ErrorRates;
+    // render markdown
+    $(".md").each(function(){
+        $(this).html(marked($(this).html()));
+    });
+    renderJax();
+
+    initGrid();
+    drawGrid();
+    initGraph();
+}
+
+function addCol() {
+    env.addCol();
+    env.errorRates = ErrorRates;
+    state = env.startState();
+    eval($("#agentspec").val())
+    agent = new TDAgent(env, spec);
+    //agent = new RL.ActorCriticAgent(env, {'gamma':0.9, 'epsilon':0.2});
+
+    // slider sets agent epsilon
+    $( "#slider" ).slider({
+        min: 0,
+        max: 1,
+        value: agent.epsilon,
+        step: 0.01,
+        slide: function(event, ui) {
+            agent.epsilon = ui.value;
+            $("#eps").html(ui.value.toFixed(2));
+        }
+    });
+
+    $("#rewardslider").slider({
+        min: -5,
+        max: 5.1,
+        value: 0,
+        step: 0.1,
+        slide: function(event, ui) {
+            if (selectedR >= 0) {
+            env.Rarr[selectedR] = ui.value;
+            $("#creward").html(ui.value.toFixed(2));
+            drawGrid();
+            } else {
+            $("#creward").html('(select a cell)');
+            }
+        }
+    });
+
+    $("#eps").html(agent.epsilon.toFixed(2));
+    $("#slider").slider('value', agent.epsilon);
+    env.errorRates = ErrorRates;
+    // render markdown
+    $(".md").each(function(){
+        $(this).html(marked($(this).html()));
+    });
+    renderJax();
+
+    initGrid();
+    drawGrid();
+    initGraph();
+}
+
+var ifAddWall = -1;
+function addWall() {
+    if (ifAddWall == 1) {
+        ifAddWall == -1;
+    } else {
+        ifAddWall = 1;
+    }
+    env.errorRates = ErrorRates;
+    state = env.startState();
+    eval($("#agentspec").val())
+    agent = new TDAgent(env, spec);
+    //agent = new RL.ActorCriticAgent(env, {'gamma':0.9, 'epsilon':0.2});
+
+    // slider sets agent epsilon
+    $( "#slider" ).slider({
+        min: 0,
+        max: 1,
+        value: agent.epsilon,
+        step: 0.01,
+        slide: function(event, ui) {
+            agent.epsilon = ui.value;
+            $("#eps").html(ui.value.toFixed(2));
+        }
+    });
+
+    $("#rewardslider").slider({
+        min: -5,
+        max: 5.1,
+        value: 0,
+        step: 0.1,
+        slide: function(event, ui) {
+            if (selectedR >= 0) {
+            env.Rarr[selectedR] = ui.value;
+            $("#creward").html(ui.value.toFixed(2));
+            drawGrid();
+            } else {
+            $("#creward").html('(select a cell)');
+            }
+        }
+    });
+
+    $("#eps").html(agent.epsilon.toFixed(2));
+    $("#slider").slider('value', agent.epsilon);
+    env.errorRates = ErrorRates;
+    // render markdown
+    $(".md").each(function(){
+        $(this).html(marked($(this).html()));
+    });
+    renderJax();
+
+    initGrid();
+    drawGrid();
+    initGraph();
+}
+
 var drawGrid = function() {
     var gh = env.gh; // height in cells
     var gw = env.gw; // width in cells
-    var gs = env.gs; // total number of cells
-
+    var gs = env.gw * env.gh; // total number of cells
     var sx = env.stox(state);
     var sy = env.stoy(state);      
     d3.select('#cpos')
@@ -149,9 +312,10 @@ var drawGrid = function() {
                 grid.attr('stroke-width', '3');
                 grid.attr('stroke', '#fdee00');
             }
-            if (s == selected) {
-                // highlight selected cell
-                grid.attr('fill', '#FF0');
+            if (s == selectedR) {
+                // highlight selectedR cell
+                console.log("highlight");
+                grid.attr('fill', '#fff747');
             } else {
                 grid.attr('fill', vcol); 
             }
@@ -192,15 +356,27 @@ var drawGrid = function() {
     }
 }
 
-var selected = -1;
+var selectedR = -1;
+var selectedW = -1;
 var cellClicked = function(s) {
-    if (s == selected) {
-        selected = -1; // toggle off
+    if (s == selectedR) {
+        selectedR = -1; // toggle off
         $("#creward").html('(select a cell)');
     } else {
-        selected = s;
+        selectedR = s;
         $("#creward").html(env.Rarr[s].toFixed(2));
         $("#rewardslider").slider('value', env.Rarr[s]);
+    }
+    drawGrid(); // redraw
+}
+
+var cellClickedWall = function(s) {
+    if (s == selectedW) {
+        selectedW = -1; // toggle off
+        env.T[s] = 0;
+    } else {
+        selectedW = s;
+        env.T[s] = 1;
     }
     drawGrid(); // redraw
 }
@@ -479,8 +655,8 @@ function start() {
         value: 0,
         step: 0.1,
         slide: function(event, ui) {
-            if (selected >= 0) {
-            env.Rarr[selected] = ui.value;
+            if (selectedR >= 0) {
+            env.Rarr[selectedR] = ui.value;
             $("#creward").html(ui.value.toFixed(2));
             drawGrid();
             } else {
@@ -530,8 +706,8 @@ async function setUploadEnv() {
         value: 0,
         step: 0.1,
         slide: function(event, ui) {
-            if (selected >= 0) {
-            env.Rarr[selected] = ui.value;
+            if (selectedR >= 0) {
+            env.Rarr[selectedR] = ui.value;
             $("#creward").html(ui.value.toFixed(2));
             drawGrid();
             } else {

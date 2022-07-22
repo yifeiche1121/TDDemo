@@ -20,16 +20,11 @@ function zeros(n) {
     if (typeof(n) == 'undefined' || isNaN(n)) {
          return []; 
     }
-    if (typeof ArrayBuffer == 'undefined') {
-    // lacking browser support
-        var arr = new Array(n);
-        for (var i = 0; i < n; i ++) {
-            arr[i] = 0; 
-        }
-        return arr;
-    } else {
-        return new Float64Array(n);
+    var arr = new Array(n);
+    for (var i = 0; i < n; i ++) {
+        arr[i] = 0; 
     }
+    return arr;
 }
 
 function randi(a, b) {
@@ -75,9 +70,7 @@ class Environment{
         console.log(url)
         const response = await fetch(url);
         const contents = await response.text();
-        const maze_specs = JSON.parse(contents);
-        console.log(maze_specs)
-        
+        const maze_specs = JSON.parse(contents);        
         this.wh = maze_specs.wh;
         this.Exits = maze_specs.Exits;
         this.Rarr = maze_specs.Rewards;
@@ -108,17 +101,15 @@ class Environment{
         */
         this.gw = this.wh[0];
         this.gh = this.wh[1];
-        this.gs = this.gh * this.gw;
     }
     example() {
         // hardcoding one gridworld for now
         this.gh = 4;
-        this.gw = 10;
-        this.gs = this.gh * this.gw; // number of states
+        this.gw = 9;
         // specify some rewards
-        var Rarr = zeros(this.gs);
-        var T = zeros(this.gs);
-        var Exits = zeros(this.gs);
+        var Rarr = zeros(this.gh * this.gw);
+        var T = zeros(this.gh * this.gw);
+        var Exits = zeros(this.gh * this.gw);
         this.rewardSpot = 32;
         Rarr[this.rewardSpot] = 1;
         Rarr[20] = -1;
@@ -139,6 +130,33 @@ class Environment{
         this.T = T;
         
     }
+    addCol() {
+        this.gw += 1;
+        for (var i = 0; i < this.gh; i ++) {
+            (this.Rarr).push(0);
+            (this.T).push(0);
+            (this.Exits).push(0);
+        }
+    }
+    addRow() {
+        this.gh += 1;
+        var newR = zeros(this.gh * this.gw);
+        var newT = zeros(this.gh * this.gw);
+        var newE = zeros(this.gh * this.gw);
+        for (var i = 0; i < this.gw; i ++) {
+            for (var j = 0; j < this.gh - 1; j ++) {
+                newR[i * this.gh + j] = this.Rarr[i * (this.gh - 1) + j];
+                newT[i * this.gh + j] = this.T[i * (this.gh - 1) + j];
+                newE[i * this.gh + j] = this.Exits[i * (this.gh - 1) + j];
+            }
+            newR[(i + 1) * this.gh - 1] = 0;
+            newT[(i + 1) * this.gh - 1] = 0;
+            newE[(i + 1) * this.gh - 1] = 0;
+        }
+        this.Rarr = newR;
+        this.Exits = newE;
+        this.T = newT;
+    }
     reward(s) {
         // reward of being in s, taking action a, and ending up in ns
         return this.Rarr[s];
@@ -153,8 +171,7 @@ class Environment{
         } else {
         // ordinary space
             var rate = Math.random() * 100;
-            console.log(rate)
-            console.log(this.errorRates);
+
             var cr = this.errorRates[0];
             var lr = this.errorRates[1];
             var rr = this.errorRates[2];
@@ -169,14 +186,11 @@ class Environment{
                 if (rate < cr) {
                     nx = x - 1; ny = y;
                 } else if (rate > cr && rate < cr + lr) {
-                    console.log(2)
                     nx = x; ny = y + 1;
                 } else if (rate > cr + lr && rate < cr + lr + rr) {
                     nx = x; ny = y - 1;
-                    console.log(1)
                 } else if (rate > 1 - or) {
                     nx = x + 1; ny = y;
-                    console.log(3)
                 }   
             }
             if (a == 1) {
@@ -184,13 +198,10 @@ class Environment{
                     nx = x; ny = y - 1;
                 } else if (rate > cr && rate < cr + lr) {
                     nx = x - 1; ny = y;
-                    console.log(0)
                 } else if (rate > cr + lr && rate < cr + lr + rr) {
                     nx = x + 1; ny = y;
-                    console.log(3)
                 } else if (rate > 1 - or) {
                     nx = x; ny = y + 1;
-                    console.log(2)
                 }     
             }
             if (a == 2) {
@@ -198,13 +209,10 @@ class Environment{
                     nx = x; ny = y + 1;
                 } else if (rate > cr && rate < cr + lr) {
                     nx = x + 1; ny = y;
-                    console.log(3)
                 } else if (rate > cr + lr && rate < cr + lr + rr) {
                     nx = x - 1; ny = y;
-                    console.log(0)
                 } else if (rate > 1 - or) {
                     nx = x; ny = y - 1;
-                    console.log(1)
                 }     
             }
             if (a == 3) {
@@ -212,13 +220,10 @@ class Environment{
                     nx = x + 1; ny = y;
                 } else if (rate > cr && rate < cr + lr) {
                     nx = x; ny = y - 1;
-                    console.log(1)
                 } else if (rate > cr + lr && rate < cr + lr + rr) {
                     nx = x; ny = y + 1;
-                    console.log(2)
                 } else if (rate > 1 - or) {
                     nx = x - 1; ny = y;
-                    console.log(0)
                 }   
             }
             if (nx < 0) { 
@@ -242,7 +247,6 @@ class Environment{
         return ns;
     }
     getLearnReward(s, a) {
-        console.log(a)
         // gridworld is deterministic, so this is easy
         var ns = this.getNextState(s,a);
         var r = this.Rarr[s]; // observe the raw reward of being in s, taking a, and ending up in ns
@@ -275,9 +279,9 @@ class Environment{
         */
         return as;
     }
-    randomState() { return Math.floor(Math.random()*this.gs); }
+    randomState() { return Math.floor(Math.random()*this.hw*this.gh); }
     startState() { return 0; }
-    getNumStates() { return this.gs; }
+    getNumStates() { return this.gw * this.gh; }
     getMaxNumActions() { return 5; }
 
     // private functions
@@ -497,9 +501,6 @@ class TDAgent{
             if (this.smooth_policy_update) {
                 // slightly hacky :p
                 this.P[ix] += this.beta * (target - this.P[ix]);
-                if (this.P[ix] < 0) {
-                    console.log("P", this.P[ix], target);
-                }
                 psum += this.P[ix];
             } else {
                 // set hard target

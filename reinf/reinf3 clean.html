@@ -139,7 +139,13 @@ spec.beta = 0.1; // learning rate for smooth policy update
     <p id="piechart-instructions">
         Error Rates
     </p>
-   <div id="rewardui">
+    <div id = "editmaze">
+      Edit the Maze:
+      <button class="btn btn-danger" onclick="addRow()" style="width:120px;height:50px;margin-bottom:5px;">Add a row</button>
+      <button class="btn btn-danger" onclick="addCol()" style="width:120px;height:50px;margin-bottom:5px;">Add a column</button>
+      <button class="btn btn-danger" onclick="addWall()" style="width:120px;height:50px;margin-bottom:5px;">Add a wall</button>
+    </div>
+    <div id="rewardui">
    Cell reward: <span id="creward">(select a cell)</span> <div id="rewardslider"></div>
    </div>
 
