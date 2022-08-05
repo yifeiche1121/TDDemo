@@ -16,8 +16,8 @@ var initGrid = function() {
 
     var gh= env.gh; // height in cells
     var gw = env.gw; // width in cells
-    var w = 600;
-    var h = 600;
+    var w = env.gw * 60;
+    var h = env.gh * 60;
     svg = d3elt.append('svg').attr('width', w).attr('height', h)
     .append('g').attr('transform', 'scale(1)');
 
@@ -30,7 +30,7 @@ var initGrid = function() {
     .attr("markerHeight", 4)
     .attr("orient", "auto")
     .append("path")
-        .attr("d", "M 0,0 V 4 L3,2 Z");
+    .attr("d", "M 0,0 V 4 L3,2 Z");
 
     for (var y = 0; y < gh; y ++) {
         for (var x = 0; x < gw; x ++) {
@@ -45,7 +45,6 @@ var initGrid = function() {
                     cellClicked(ss);
                  } // close over s
             }(s));
-            console.log(ifAddWall);
             if (ifAddWall == 1) {
                 g.on('click', function(ss) {
                     return function() { 
@@ -120,7 +119,57 @@ function addRow() {
     env.errorRates = ErrorRates;
     state = env.startState();
     eval($("#agentspec").val())
-    agent = new TDAgent(env, spec);
+    agent = new TDAgent(env);
+    //agent = new RL.ActorCriticAgent(env, {'gamma':0.9, 'epsilon':0.2});
+
+    // slider sets agent epsilon
+    $( "#slider" ).slider({
+        min: 0,
+        max: 1,
+        value: agent.epsilon,
+        step: 0.01,
+        slide: function(event, ui) {
+            agent.epsilon = ui.value;
+            $("#eps").html(ui.value.toFixed(2));
+        }
+    });
+
+    $("#rewardslider").slider({
+        min: -5,
+        max: 5.1,
+        value: 0,
+        step: 0.1,
+        slide: function(event, ui) {
+            if (selectedR >= 0) {
+            env.Rarr[selectedR] = ui.value;
+            $("#creward").html(ui.value.toFixed(2));
+            drawGrid();
+            } else {
+            $("#creward").html('(select a cell)');
+            }
+        }
+    });
+
+    $("#eps").html(agent.epsilon.toFixed(2));
+    $("#slider").slider('value', agent.epsilon);
+    env.errorRates = ErrorRates;
+    // render markdown
+    $(".md").each(function(){
+        $(this).html(marked($(this).html()));
+    });
+    renderJax();
+
+    initGrid();
+    drawGrid();
+    initGraph();
+}
+
+function deleteRow() {
+    env.deleteRow();
+    env.errorRates = ErrorRates;
+    state = env.startState();
+    eval($("#agentspec").val())
+    agent = new TDAgent(env);
     //agent = new RL.ActorCriticAgent(env, {'gamma':0.9, 'epsilon':0.2});
 
     // slider sets agent epsilon
@@ -170,7 +219,7 @@ function addCol() {
     env.errorRates = ErrorRates;
     state = env.startState();
     eval($("#agentspec").val())
-    agent = new TDAgent(env, spec);
+    agent = new TDAgent(env);
     //agent = new RL.ActorCriticAgent(env, {'gamma':0.9, 'epsilon':0.2});
 
     // slider sets agent epsilon
@@ -215,17 +264,74 @@ function addCol() {
     initGraph();
 }
 
+function deleteCol() {
+    env.deleteCol();
+    env.errorRates = ErrorRates;
+    state = env.startState();
+    eval($("#agentspec").val())
+    agent = new TDAgent(env);
+    //agent = new RL.ActorCriticAgent(env, {'gamma':0.9, 'epsilon':0.2});
+
+    // slider sets agent epsilon
+    $( "#slider" ).slider({
+        min: 0,
+        max: 1,
+        value: agent.epsilon,
+        step: 0.01,
+        slide: function(event, ui) {
+            agent.epsilon = ui.value;
+            $("#eps").html(ui.value.toFixed(2));
+        }
+    });
+
+    $("#rewardslider").slider({
+        min: -5,
+        max: 5.1,
+        value: 0,
+        step: 0.1,
+        slide: function(event, ui) {
+            if (selectedR >= 0) {
+            env.Rarr[selectedR] = ui.value;
+            $("#creward").html(ui.value.toFixed(2));
+            drawGrid();
+            } else {
+            $("#creward").html('(select a cell)');
+            }
+        }
+    });
+
+    $("#eps").html(agent.epsilon.toFixed(2));
+    $("#slider").slider('value', agent.epsilon);
+    env.errorRates = ErrorRates;
+    // render markdown
+    $(".md").each(function(){
+        $(this).html(marked($(this).html()));
+    });
+    renderJax();
+
+    initGrid();
+    drawGrid();
+    initGraph();
+}
+
+//var dbtn = document.getElementById('danger_btn');
+var defaultCol;
 var ifAddWall = -1;
 function addWall() {
+    var btn = document.getElementById('wall_btn');
     if (ifAddWall == 1) {
         ifAddWall == -1;
+        btn.style.backgroundColor = defaultCol;
     } else {
+        defaultCol = btn.style.backgroundColor;
+        console.log(btn)
+        btn.style.backgroundColor = "#ffbc4f";
         ifAddWall = 1;
     }
     env.errorRates = ErrorRates;
     state = env.startState();
     eval($("#agentspec").val())
-    agent = new TDAgent(env, spec);
+    agent = new TDAgent(env);
     //agent = new RL.ActorCriticAgent(env, {'gamma':0.9, 'epsilon':0.2});
 
     // slider sets agent epsilon
@@ -343,6 +449,9 @@ var drawGrid = function() {
                 if (prob < 0.05) { pa.attr('visibility', 'hidden'); }
                 else { pa.attr('visibility', 'visible'); }
                 var arrowlen = cs/2 * prob * 0.9;
+                if (arrowlen < 6) {
+                    arrowlen = 6;
+                }
                 if (a == 0) {nx = -arrowlen; ny = 0;}
                 if (a == 1) {nx = 0; ny = -arrowlen;}
                 if (a == 2) {nx = 0; ny = arrowlen;}
@@ -379,6 +488,19 @@ var cellClickedWall = function(s) {
         env.T[s] = 1;
     }
     drawGrid(); // redraw
+}
+
+function downloadFile() {
+    var dict = {
+        "wh": env.wh,
+        "Exits": env.Exits,
+        "Rewards": env.Rarr,
+        "Walls": env.T
+    };
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dict));
+    var el = document.getElementById('downloadFile');
+    el.setAttribute("href", dataStr);
+    el.setAttribute("download", "maze.json");
 }
 
 var goslow = function() {
@@ -426,7 +548,7 @@ var simulate = function() {
 
 function resetAgent() {
     eval($("#agentspec").val())
-    agent = new TDAgent(env, spec);
+    agent = new TDAgent(env);
     $("#slider").slider('value', agent.epsilon);
     $("#eps").html(agent.epsilon.toFixed(2));
     state = env.startState(); // move state to beginning too
@@ -503,13 +625,21 @@ var ErrorRates;
         var dimensions = ['Correct', 'Left', 'Right', 'Opposite'];
         var randomProportions = generateRandomProportions(dimensions.length, 0.05);
         ErrorRates = randomProportions;
-        var proportions = dimensions.map(function(d,i) { return {
-            label: d,
-            proportion: randomProportions[i],
-            collapsed: false,
-            format: {
-                label: d.charAt(0).toUpperCase() + d.slice(1) // capitalise first letter
-            }
+        var colors = {
+            'Correct': "#8ac040",
+            'Left': "#fbd109",
+            'Right': "#6fa8dc",
+            'Opposite': "#e54343"
+        }
+        var proportions = dimensions.map(function(d,i) { 
+            return {
+                label: d,
+                proportion: randomProportions[i],
+                collapsed: false,
+                format: {
+                    color: colors[d],
+                    label: d.charAt(0).toUpperCase() + d.slice(1) // capitalise first letter
+                }
         }});
 
 
@@ -518,7 +648,6 @@ var ErrorRates;
             radius: 0.9,
             collapsing: true,
             proportions: proportions,
-            drawSegment: drawSegmentOutlineOnly,
             onchange: onPieChartChange
         };
 
@@ -564,7 +693,7 @@ var ErrorRates;
             var labelsRow = '<tr>';
             var propsRow = '<tr>';
             for(var i = 0; i < proportions.length; i += 1) {
-                labelsRow += '<th>' + proportions[i].format.label + '</th>';
+                labelsRow += '<th style="color:' + proportions[i].format.color + '">' + proportions[i].format.label + '</th>';
 
                 var v = '<var>' + percentages[i].toFixed(0) + '%</var>';
                 var plus = '<div id="plu-' + dimensions[i] + '" class="adjust-button" data-i="' + i + '" data-d="-1">&#43;</div>';
@@ -634,8 +763,7 @@ function start() {
     env.errorRates = ErrorRates;
     state = env.startState();
     eval($("#agentspec").val())
-    agent = new TDAgent(env, spec);
-    //agent = new RL.ActorCriticAgent(env, {'gamma':0.9, 'epsilon':0.2});
+    agent = new TDAgent(env);
 
     // slider sets agent epsilon
     $( "#slider" ).slider({
@@ -685,8 +813,7 @@ async function setUploadEnv() {
     env.errorRates = ErrorRates;
     state = env.startState();
     eval($("#agentspec").val())
-    agent = new TDAgent(env, spec);
-    //agent = new RL.ActorCriticAgent(env, {'gamma':0.9, 'epsilon':0.2});
+    agent = new TDAgent(env);
 
     // slider sets agent epsilon
     $( "#slider" ).slider({

@@ -9,13 +9,6 @@ function assert(condition, message) {
     }
 }
 
-function getopt(opt, field_name, default_value) {
-    if (typeof opt == 'undefined') { 
-        return default_value; 
-    }
-    return (typeof opt[field_name] != 'undefined') ? opt[field_name] : default_value;
-}
-
 function zeros(n) {
     if (typeof(n) == 'undefined' || isNaN(n)) {
          return []; 
@@ -157,6 +150,29 @@ class Environment{
         this.Exits = newE;
         this.T = newT;
     }
+    deleteRow() {
+        this.gh -= 1;
+        var newR = zeros(this.gh * this.gw);
+        var newT = zeros(this.gh * this.gw);
+        var newE = zeros(this.gh * this.gw);
+        for (var i = 0; i < this.gw; i ++) {
+            for (var j = 0; j < this.gh + 1; j ++) {
+                newR[i * this.gh + j] = this.Rarr[i * (this.gh + 1) + j];
+                newT[i * this.gh + j] = this.T[i * (this.gh + 1) + j];
+                newE[i * this.gh + j] = this.Exits[i * (this.gh + 1) + j];
+            }
+        }
+        this.Rarr = newR;
+        this.Exits = newE;
+        this.T = newT;
+    }
+    deleteCol() {
+        this.gw -= 1;
+        this.Rarr.slice(0, this.gw * this.gh);
+        this.Exits.slice(0, this.gw * this.gh);
+        this.T.slice(0, this.gw * this.gh);
+
+    }
     reward(s) {
         // reward of being in s, taking action a, and ending up in ns
         return this.Rarr[s];
@@ -291,16 +307,16 @@ class Environment{
 }
 
 class TDAgent{
-    constructor(env, opt) {
-        this.update = getopt(opt, 'update', 'qlearn'); // qlearn | sarsa
-        this.gamma = getopt(opt, 'gamma', 0.75); // future reward discount factor
-        this.epsilon = getopt(opt, 'epsilon', 0.1); // for epsilon-greedy policy
-        this.alpha = getopt(opt, 'alpha', 0.01); // value function learning rate
+    constructor(env) {
+        this.update = 'qlearn'; // qlearn | sarsa
+        this.gamma = 0.9; // future reward discount factor
+        this.epsilon = 0.2; // for epsilon-greedy policy
+        this.alpha = 0.1; // value function learning rate
         // class allows non-deterministic policy, and smoothly regressing towards the optimal policy based on Q
-        this.smooth_policy_update = getopt(opt, 'smooth_policy_update', false);
-        this.beta = getopt(opt, 'beta', 0.01); // learning rate for policy, if smooth updates are on
-        this.q_init_val = getopt(opt, 'q_init_val', 0); // optional optimistic initial values
-        this.planN = getopt(opt, 'planN', 0); // number of planning steps per learning iteration (0 = no planning)
+        this.smooth_policy_update = true;
+        this.beta = 0.1; // learning rate for policy, if smooth updates are on
+        this.q_init_val = 0; // optional optimistic initial values
+        this.planN = 50; // number of planning steps per learning iteration (0 = no planning)
         this.A = null;
         this.Q = null; // state action value function
         this.P = null; // policy distribution \pi(s,a)
