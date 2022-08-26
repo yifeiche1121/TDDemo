@@ -7,4 +7,4 @@ Based on the REINFORCE.js code of Andrej Kartpathy at https://github.com/karpath
 Used draggable piechart created by jamesalvarez at https://github.com/jamesalvarez/draggable-piechart
 
 Added features:
-Probabilistic actions, Upload maze in json format, Edit maze(add row, column, wall)
+Stochastic actions, upload and download maze in json format, edit maze(add/delete row, column, wall, edit reward)
