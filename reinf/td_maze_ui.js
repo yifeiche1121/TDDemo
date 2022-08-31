@@ -6,7 +6,10 @@ var rewardTexts = {};
 var valueTexts = {};
 var policyArrows = {};
 var cs = 60;  // cell size
+
+//initializing maze
 var initGrid = function() {
+    console.log("initgrid");
     var d3elt = d3.select('#draw');
     d3elt.html('');
     grids = {};
@@ -14,10 +17,10 @@ var initGrid = function() {
     valueTexts = {};
     policyArrows = {};
 
-    var gw = env.width; // width in cells
-    var gh= env.height; // height in cells
-    var w = env.width * 60;
-    var h = env.height * 60;
+    let gw = env.width; // width in cells
+    let gh= env.height; // height in cells
+    let w = env.width * 60;
+    let h = env.height * 60;
     svg = d3elt.append('svg').attr('width', w).attr('height', h)
     .append('g').attr('transform', 'scale(1)');
 
@@ -32,31 +35,27 @@ var initGrid = function() {
     .append("path")
     .attr("d", "M 0,0 V 4 L3,2 Z");
 
-    for (var y = 0; y < gh; y ++) {
-        for (var x = 0; x < gw; x ++) {
-            var xcoord = x * cs;
-            var ycoord = y * cs;
-            var s = env.xytos(x,y);
+    for (let y = 0; y < gh; y ++) {
+        for (let x = 0; x < gw; x ++) {
+            let xcoord = x * cs;
+            let ycoord = y * cs;
+            let s = env.xytos(x,y);
 
-            var g = svg.append('g');
+            let g = svg.append('g');
             // click callback for group
-            if (addRewardMode == 1) {
-                g.on('click', function(ss) {
-                    return function() { 
+            g.on('click', function(ss) {
+                return function() { 
+                    if (addRewardMode == 1) {
                         cellClicked(ss);
-                     } // close over s
-                }(s));
-            }
-            if (addWallMode == 1) {
-                g.on('click', function(ss) {
-                    return function() { 
+                    } else if (addWallMode == 1) {
                         cellClickedWall(ss);
-                     } // close over s
-                }(s));
-            }
+                    }
+                } // close over s
+            }(s));
+
 
             // set up cell rectangles
-            var grid = g.append('rect')
+            let grid = g.append('rect')
             .attr('x', xcoord)
             .attr('y', ycoord)
             .attr('height', cs)
@@ -67,9 +66,9 @@ var initGrid = function() {
             grids[s] = grid;
 
             // skip rest for cliffs
-            if (env.Walls[s] == 1 || s == selectedW) { continue; }
+            if (env.Walls[s] == 1) { continue; }
             // reward text
-            var rewardText = g.append('text')
+            let rewardText = g.append('text')
                 .attr('x', xcoord + 5)
                 .attr('y', ycoord + 55)
                 .attr('font-size', 14)
@@ -83,7 +82,7 @@ var initGrid = function() {
             rewardTexts[s] = rewardText;
 
             // value text
-            var valueText = g.append('text')
+            let valueText = g.append('text')
             .attr('x', xcoord + 5)
             .attr('y', ycoord + 20)
             .attr('fill', '#000')
@@ -92,8 +91,8 @@ var initGrid = function() {
         
             // policy arrows
             policyArrows[s] = []
-            for (var a = 0; a < 4; a ++) {
-                var pa = g.append('line')
+            for (let a = 0; a < 4; a ++) {
+                let pa = g.append('line')
                 .attr('x1', xcoord)
                 .attr('y1', ycoord)
                 .attr('x2', xcoord)
@@ -116,110 +115,24 @@ var initGrid = function() {
     .attr('id', 'cpos');
 }
 
-function addRow() {
-    env.addRow();
-    state = env.startState();
-    eval($("#agentspec").val())
-    agent = new TDAgent(env);
-    initGrid();
-    drawGrid();
-    initGraph();
-}
-
-function deleteRow() {
-    env.deleteRow();
-    state = env.startState();
-    eval($("#agentspec").val())
-    agent = new TDAgent(env);
-    initGrid();
-    drawGrid();
-    initGraph();
-}
-
-function addCol() {
-    env.addCol();
-    state = env.startState();
-    eval($("#agentspec").val())
-    agent = new TDAgent(env);
-    initGrid();
-    drawGrid();
-    initGraph();
-}
-
-function deleteCol() {
-    env.deleteCol();
-    state = env.startState();
-    eval($("#agentspec").val())
-    agent = new TDAgent(env);
-    initGrid();
-    drawGrid();
-    initGraph();
-}
-
-//var dbtn = document.getElementById('danger_btn');
-var defaultColWallBtn;
-var addWallMode = -1;
-function addWall() {
-    var btn = document.getElementById('wall_btn');
-    if (addWallMode == 1) {
-        addWallMode = -1;
-        btn.style.backgroundColor = defaultColWallBtn;
-        selectedW = -1;
-    } else {
-        defaultColWallBtn = btn.style.backgroundColor;
-        btn.style.backgroundColor = "#ffbc4f";
-        addWallMode = 1;
-    }
-    state = env.startState();
-    eval($("#agentspec").val())
-    agent = new TDAgent(env);
-    initGrid();
-    drawGrid();
-    initGraph();
-}
-
-var defaultColRBtn;
-var addRewardMode = -1;
-function addReward() {
-    var btn = document.getElementById('re_btn');
-    var sliderR = document.getElementById("rewardui");
-    if (addRewardMode == 1) {
-        addRewardMode = -1;
-        selectedR = -1;
-        $("#creward").html('(select a cell)');
-        btn.style.backgroundColor = defaultColRBtn;
-        sliderR.style.display = "none";
-    } else {
-        defaultColRBtn = btn.style.backgroundColor;
-        btn.style.backgroundColor = "#ffbc4f";
-        addRewardMode = 1;
-        sliderR.style.display = "block";
-    }
-    state = env.startState();
-    eval($("#agentspec").val())
-    agent = new TDAgent(env);
-    initGrid();
-    drawGrid();
-    initGraph();
-}
-
+// Update display
 var drawGrid = function() {
-    var gh = env.height; // height in cells
-    var gw = env.width; // width in cells
-    var gs = env.width * env.height; // total number of cells
-    var sx = env.stox(state);
-    var sy = env.stoy(state);      
+    let gh = env.height; // height in cells
+    let gw = env.width; // width in cells
+    let gs = env.width * env.height; // total number of cells
+    let sx = env.stox(state);
+    let sy = env.stoy(state);      
     d3.select('#cpos')
     .attr('cx', sx*cs+cs/2)
     .attr('cy', sy*cs+cs/2);
 
     // updates the grid with current state of world/agent
-    for (var y = 0; y < gh; y ++) {
-        for (var x = 0; x < gw; x ++) {
-            var xcoord = x * cs;
-            var ycoord = y * cs;
-            var r = 255, g = 255, b = 255;
-            var s = env.xytos(x,y);
+    for (let y = 0; y < gh; y ++) {
+        for (let x = 0; x < gw; x ++) {
+            let xcoord = x * cs;
+            let ycoord = y * cs;
+            let r = 255, g = 255, b = 255;
+            let s = env.xytos(x,y);
             
             // get value of state s under agent policy
             if (typeof agent.StateActionValue !== 'undefined') {
@@ -240,16 +153,13 @@ var drawGrid = function() {
             if (env.Walls[s] == 1) { vcol = "#AAA"; rcol = "#AAA"; }
 
             // update colors of rectangles based on value
-            var grid = grids[s];
+            
+            let grid = grids[s];
             if (env.Exits[s] == 1) {
                 grid.attr('stroke-width', '3');
                 grid.attr('stroke', '#fdee00');
             }
-            if (s == selectedW) {
-                // highlight selectedW cell
-                grid.attr('fill', '#AAA');
-                continue;
-            } else if (s == selectedR) {
+            if (s == selectedR) {
                 // highlight selectedR cell
                 grid.attr('fill', '#fff747');
             } else {
@@ -260,8 +170,8 @@ var drawGrid = function() {
                 continue; 
             }
             // write reward texts
-            var rv = env.Rewards[s];
-            var rewardText = rewardTexts[s];
+            let rv = env.Rewards[s];
+            let rewardText = rewardTexts[s];
             if (rv != 0) {
                 rewardText.text('R ' + rv.toFixed(1))
             } else {
@@ -269,17 +179,17 @@ var drawGrid = function() {
             }
 
             // write value
-            var valueText = valueTexts[s];
+            let valueText = valueTexts[s];
             valueText.text(vv.toFixed(2));
             
             // update policy arrows
-            var pas = policyArrows[s];
-            for (var a = 0; a < 4; a ++) {
-                var pa = pas[a];
-                var prob = agent.PolicyDistribution[a * gs + s];
+            let pas = policyArrows[s];
+            for (let a = 0; a < 4; a ++) {
+                let pa = pas[a];
+                let prob = agent.PolicyDistribution[a * gs + s];
                 if (prob < 0.05) { pa.attr('visibility', 'hidden'); }
                 else { pa.attr('visibility', 'visible'); }
-                var arrowlen = cs/2 * prob * 0.9;
+                let arrowlen = cs/2 * prob * 0.9;
                 if (arrowlen < 6) {
                     arrowlen = 6;
                 }
@@ -296,8 +206,88 @@ var drawGrid = function() {
     }
 }
 
+// edit maze functions
+function addRow() {
+    env.addRow();
+    state = env.startState();
+    eval($("#agentspec").val())
+    agent = new TDAgent(env);
+    initGrid();
+    drawGrid();
+}
+
+function deleteRow() {
+    env.deleteRow();
+    state = env.startState();
+    eval($("#agentspec").val())
+    agent = new TDAgent(env);
+    initGrid();
+    drawGrid();
+}
+
+function addCol() {
+    env.addCol();
+    state = env.startState();
+    eval($("#agentspec").val())
+    agent = new TDAgent(env);
+    initGrid();
+    drawGrid();
+}
+
+function deleteCol() {
+    env.deleteCol();
+    state = env.startState();
+    eval($("#agentspec").val())
+    agent = new TDAgent(env);
+    initGrid();
+    drawGrid();
+}
+
+var defaultColWallBtn;
+var addWallMode = -1;
+function addWall() {
+    let btn = document.getElementById('wall_btn');
+    if (addWallMode == 1) {
+        addWallMode = -1;
+        btn.style.backgroundColor = defaultColWallBtn;
+        // = -1;
+    } else {
+        defaultColWallBtn = btn.style.backgroundColor;
+        btn.style.backgroundColor = "#ffbc4f";
+        addWallMode = 1;
+    }
+
+    initGrid();
+    drawGrid();
+}
+
+var defaultColRBtn;
+var addRewardMode = -1;
+function addReward() {
+    let btn = document.getElementById('re_btn');
+    let sliderR = document.getElementById("rewardui");
+    if (addRewardMode == 1) {
+        addRewardMode = -1;
+        selectedR = -1;
+        $("#creward").html('(select a cell)');
+        btn.style.backgroundColor = defaultColRBtn;
+        sliderR.style.display = "none";
+    } else {
+        defaultColRBtn = btn.style.backgroundColor;
+        btn.style.backgroundColor = "#ffbc4f";
+        addRewardMode = 1;
+        sliderR.style.display = "block";
+    }
+    state = env.startState();
+    eval($("#agentspec").val())
+    agent = new TDAgent(env);
+    initGrid();
+    drawGrid();
+}
+
+
+
 var selectedR = -1;
-var selectedW = -1;
 var cellClicked = function(s) {
     if (s == selectedR) {
         selectedR = -1; // toggle off
@@ -311,25 +301,21 @@ var cellClicked = function(s) {
 }
 
 var cellClickedWall = function(s) {
-    if (s == selectedW) {
-        selectedW = -1; // toggle off
-        env.Walls[s] = 0;
-    } else {
-        selectedW = s;
-        env.Walls[s] = 1;
-    }
+    env.Walls[s] = 1 - env.Walls[s];
+    initGrid();
     drawGrid(); // redraw
 }
 
+// download maze
 function downloadFile() {
-    var dict = {
+    let dict = {
         "wh": env.wh,
         "Exits": env.Exits,
         "Rewards": env.Rewards,
         "Walls": env.Walls
     };
-    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dict));
-    var el = document.getElementById('downloadFile');
+    let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dict));
+    let el = document.getElementById('downloadFile');
     el.setAttribute("href", dataStr);
     el.setAttribute("download", "maze.json");
 }
@@ -350,9 +336,9 @@ var nsteps_counter = 0;
 var nflot = 1000;
 var tdlearn = function() {
     env.errorRates = ErrorRates;
-    for (var k = 0; k < steps_per_tick; k ++) {
-                var a = agent.getAction(state); // ask agent for an action
-                var obs = env.getLearnReward(state, a); // run it through environment dynamics
+    for (let k = 0; k < steps_per_tick; k ++) {
+                let a = agent.getAction(state); // ask agent for an action
+                let obs = env.getLearnReward(state, a); // run it through environment dynamics
                 agent.learn(obs.rval); // allow opportunity for the agent to learn
                 state = obs.ns; // evolve environment to next state
                 nsteps_counter += 1;
@@ -395,47 +381,10 @@ function resetAll() {
     drawGrid();
 }
 
-function initGraph() {
-    var container = $("#flotreward");
-    var res = getFlotRewards();
-    series = [{
-        data: res,
-        lines: {fill: true}
-    }];
-    var plot = $.plot(container, series, {
-        grid: {
-            borderWidth: 1,
-            minBorderMargin: 20,
-            labelMargin: 10,
-            backgroundColor: {
-            colors: ["#FFF", "#e4f4f4"]
-            },
-            margin: {
-            top: 10,
-            bottom: 10,
-            left: 10,
-            }
-        },
-        xaxis: {
-            min: 0,
-            max: nflot
-        },
-        yaxis: {
-            min: 0,
-            max: 1000
-        }
-    });
-
-    setInterval(function(){
-    series[0].data = getFlotRewards();
-    plot.setData(series);
-    plot.draw();
-    }, 100);
-}
 function getFlotRewards() {
     // zip rewards into flot data
-    var res = [];
-    for (var i = 0; i < nsteps_history.length; i ++) {
+    let res = [];
+    for (let i = 0; i < nsteps_history.length; i ++) {
         res.push([i, nsteps_history[i]]);
     }
     return res;
@@ -456,16 +405,16 @@ var ErrorRates;
 
 
     function setupPieChart() {
-        var dimensions = ['Correct', 'Left', 'Right', 'Opposite'];
-        var randomProportions = generateRandomProportions(dimensions.length, 0.05);
+        let dimensions = ['Correct', 'Left', 'Right', 'Opposite'];
+        let randomProportions = generateRandomProportions(dimensions.length, 0.05);
         ErrorRates = randomProportions;
-        var colors = {
+        let colors = {
             'Correct': "#8ac040",
             'Left': "#fbd109",
             'Right': "#6fa8dc",
             'Opposite': "#e54343"
         }
-        var proportions = dimensions.map(function(d,i) { 
+        let proportions = dimensions.map(function(d,i) { 
             return {
                 label: d,
                 proportion: randomProportions[i],
@@ -477,7 +426,7 @@ var ErrorRates;
         }});
 
 
-        var setup = {
+        let setup = {
             canvas: document.getElementById('piechart'),
             radius: 0.9,
             collapsing: true,
@@ -485,53 +434,21 @@ var ErrorRates;
             onchange: onPieChartChange
         };
 
-        var newPie = new DraggablePiechart(setup);
-
-        function drawSegmentOutlineOnly(context, piechart, centerX, centerY, radius, startingAngle, arcSize, format, collapsed) {
-
-            if (collapsed) { return; }
-
-            // Draw segment
-            context.save();
-            var endingAngle = startingAngle + arcSize;
-            context.beginPath();
-            context.moveTo(centerX, centerY);
-            context.arc(centerX, centerY, radius, startingAngle, endingAngle, false);
-            context.closePath();
-
-            context.fillStyle = '#f5f5f5';
-            context.fill();
-            context.stroke();
-            context.restore();
-
-            // Draw label on top
-            context.save();
-            context.translate(centerX, centerY);
-            context.rotate(startingAngle);
-
-            var fontSize = Math.floor(context.canvas.height / 25);
-            var dx = radius - fontSize;
-            var dy = centerY / 10;
-
-            context.textAlign = "right";
-            context.font = fontSize + "pt Helvetica";
-            context.fillText(format.label, dx, dy);
-            context.restore();
-        }
+        let newPie = new DraggablePiechart(setup);
 
         function onPieChartChange(piechart) {
 
-            var table = document.getElementById('proportions-table');
-            var percentages = piechart.getAllSliceSizePercentages();
+            let table = document.getElementById('proportions-table');
+            let percentages = piechart.getAllSliceSizePercentages();
             ErrorRates = percentages;
-            var labelsRow = '<tr>';
-            var propsRow = '<tr>';
-            for(var i = 0; i < proportions.length; i += 1) {
+            let labelsRow = '<tr>';
+            let propsRow = '<tr>';
+            for(let i = 0; i < proportions.length; i += 1) {
                 labelsRow += '<th style="color:' + proportions[i].format.color + '">' + proportions[i].format.label + '</th>';
 
-                var v = '<var>' + percentages[i].toFixed(0) + '%</var>';
-                var plus = '<div id="plu-' + dimensions[i] + '" class="adjust-button" data-i="' + i + '" data-d="-1">&#43;</div>';
-                var minus = '<div id="min-' + dimensions[i] + '" class="adjust-button" data-i="' + i + '" data-d="1">&#8722;</div>';
+                let v = '<var>' + percentages[i].toFixed(0) + '%</var>';
+                let plus = '<div id="plu-' + dimensions[i] + '" class="adjust-button" data-i="' + i + '" data-d="-1">&#43;</div>';
+                let minus = '<div id="min-' + dimensions[i] + '" class="adjust-button" data-i="' + i + '" data-d="1">&#8722;</div>';
                 propsRow += '<td>' + v + plus + minus + '</td>';
             }
             labelsRow += '</tr>';
@@ -539,11 +456,11 @@ var ErrorRates;
 
             table.innerHTML = labelsRow + propsRow;
 
-            var adjust = document.getElementsByClassName("adjust-button");
+            let adjust = document.getElementsByClassName("adjust-button");
 
             function adjustClick(e) {
-                var i = this.getAttribute('data-i');
-                var d = this.getAttribute('data-d');
+                let i = this.getAttribute('data-i');
+                let d = this.getAttribute('data-d');
 
                 piechart.moveAngle(i, (d * 0.1));
             }
@@ -560,17 +477,17 @@ var ErrorRates;
         function generateRandomProportions(n, min) {
 
             // n random numbers 0 - 1
-            var rnd = Array.apply(null, {length: n}).map(function(){ return Math.random(); });
+            let rnd = Array.apply(null, {length: n}).map(function(){ return Math.random(); });
 
             // sum of numbers
-            var rndTotal = rnd.reduce(function(a, v) { return a + v; }, 0);
+            let rndTotal = rnd.reduce(function(a, v) { return a + v; }, 0);
 
             // get proportions, then make sure each propoertion is above min
             return validateAndCorrectProportions(rnd.map(function(v) { return v / rndTotal; }), min);
 
 
             function validateAndCorrectProportions(proportions, min) {
-                var sortedProportions = proportions.sort(function(a,b){return a - b});
+                let sortedProportions = proportions.sort(function(a,b){return a - b});
 
                 for (var i = 0; i < sortedProportions.length; i += 1) {
                     if (sortedProportions[i] < min) {
@@ -588,6 +505,7 @@ var ErrorRates;
 
 })();
 
+// run all
 var state;
 var agent, env;
 
@@ -596,7 +514,7 @@ function start() {
     env.initialMaze();
     env.errorRates = ErrorRates;
     state = env.startState();
-    eval($("#agentspec").val())
+    //eval($("#agentspec").val())
     agent = new TDAgent(env);
 
     // slider sets agent epsilon
@@ -648,9 +566,9 @@ function start() {
 
     initGrid();
     drawGrid();
-    initGraph();
 }
 
+// run all using uploaded maze
 async function setUploadEnv() {
     env = new Environment(); // create environment
     await env.reset();
@@ -707,6 +625,5 @@ async function setUploadEnv() {
 
     initGrid();
     drawGrid();
-    initGraph();
 }
 
