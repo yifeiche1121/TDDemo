@@ -297,6 +297,7 @@ var cellClicked = function(s) {
         $("#creward").html(env.Rewards[s].toFixed(2));
         $("#rewardslider").slider('value', env.Rewards[s]);
     }
+    initGrid();
     drawGrid(); // redraw
 }
 
