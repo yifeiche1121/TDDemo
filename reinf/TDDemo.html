@@ -86,19 +86,14 @@
   
  </head>
 <body onload="start();">
-
-  <div id="logo" style="margin-left:230px; margin-right:230px; margin-top:40px; margin-bottom: 20px;">
-    <h1 style="font-size:30px;">Stochastic</h1>
-    <script src="bug_logo.js"></script>
-  </div>
   
   <div id="wrap">
-    
+    <img src="stochastic_crop.gif" width="300" height="100" style="margin-left: auto; margin-right: auto; margin-top: 20px; margin-bottom: 20px;"/> 
 
     <div id="mynav" style="border-bottom:1px solid #999; padding-bottom: 10px; margin-bottom:30px;">
       <ul class="nav nav-pills">
         <li role="presentation"><a href="index.html">About</a></li>
-        <li role="presentation" class="active"><a href="reinf3 clean.html">GridWorld: TD</a></li>
+        <li role="presentation" class="active"><a href="TDDemo.html">GridWorld: TD</a></li>
       </ul>
      </div>
 
@@ -112,32 +107,32 @@
    <button class="btn btn-success" onclick="goslow()" style="width:120px;height:50px;margin-bottom:5px;">Go slow</button>
    <button class="btn btn-primary" onclick="tdlearn()" style="width:120px;height:50px;margin-bottom:5px;">Step</button>
 
-</div>
-<div  style = "margin-top:20px;margin-bottom:20px;margin-left:230px;margin-right:230px;">
-  Input Maze File Url:
-  <input onblur="setUploadEnv()" type="text" name="url" id="url" style="margin-left: 30px;margin-right:30px"/>
-  Download Maze File as json:
-  <a id="downloadFile" onclick="downloadFile();" class="btn"><i class="icon-download"></i> Download</a>
-</div>
-   <div id="epsilon" style = "margin-top:20px;margin-bottom:20px;margin-left:230px;margin-right:230px;">
-   Exploration epsilon: <span id="eps">0.15</span> <div id="slider"></div>
-   </div>
-   <div id="gamma" style = "margin-top:20px;margin-bottom:20px;margin-left:230px;margin-right:230px;">
-    Gamma: <span id="gam">0.15</span> <div id="gammaslider"></div>
-    </div>
-   <div id = "editmaze" style = "margin-bottom:20px;margin-bottom:30px;margin-left:230px;margin-right:230px;">
-    Edit the Maze:
-    <button class="btn btn-primary" onclick="addRow()" style="width:110px;height:50px;margin-left:10px;margin-bottom:5px;">Add a row</button>
-    <button class="btn btn-danger" onclick="deleteRow()" style="width:120px;height:50px;margin-bottom:5px;">Delete a row</button>
-    <button id = "danger_btn" class="btn btn-primary" onclick="addCol()" style="width:110px;height:50px;margin-bottom:5px;">Add a column</button>
-    <button class="btn btn-danger" onclick="deleteCol()" style="width:120px;height:50px;margin-bottom:5px;">Delete a column</button>
-    <button id = "wall_btn" class="btn btn-primary" onclick="addWall()" style="width:110px;height:50px;margin-bottom:5px;">Add a wall</button>
-    <button id = "re_btn" class="btn btn-success" onclick="addReward()" style="width:110px;height:50px;margin-bottom:5px;">Edit Reward</button>
+   <div  style = "margin-top: 20px;margin-bottom: 20px;"">
+    Input Maze File Url:
+    <input onblur="setUploadEnv()" type="text" name="url" id="url" style="margin-left: 30px;margin-right:30px"/>
+    Download Maze File as json:
+    <a id="downloadFile" onclick="downloadFile();" class="btn"><i class="icon-download"></i> Download</a>
   </div>
-  
-  <div id="rewardui" style = "margin-top:20px;margin-bottom:40px;margin-left:230px;margin-right:230px;display:none;">
-    Cell reward: <span id="creward">(select a cell)</span> <div id="rewardslider"></div>
+     <div id="epsilon" style = "margin-top:20px;margin-bottom:20px;">
+     Exploration epsilon: <span id="eps">0.15</span> <div id="slider"></div>
+     </div>
+     <div id="gamma" style = "margin-top:20px;margin-bottom:20px;">
+      Gamma: <span id="gam">0.15</span> <div id="gammaslider"></div>
+      </div>
+     <div id = "editmaze" style = "margin-bottom:20px;margin-bottom:30px;">
+      Edit the Maze:
+      <button class="btn btn-primary" onclick="addRow()" style="width:110px;height:50px;margin-bottom:5px;">Add a row</button>
+      <button class="btn btn-danger" onclick="deleteRow()" style="width:120px;height:50px;margin-bottom:5px;">Delete a row</button>
+      <button id = "danger_btn" class="btn btn-primary" onclick="addCol()" style="width:110px;height:50px;margin-bottom:5px;">Add a column</button>
+      <button class="btn btn-danger" onclick="deleteCol()" style="width:120px;height:50px;margin-bottom:5px;">Delete a column</button>
+      <button id = "wall_btn" class="btn btn-primary" onclick="addWall()" style="width:110px;height:50px;margin-bottom:5px;">Add a wall</button>
+      <button id = "re_btn" class="btn btn-success" onclick="addReward()" style="width:110px;height:50px;margin-bottom:5px;">Edit Reward</button>
     </div>
+    
+    <div id="rewardui" style = "margin-top:20px;margin-bottom:40px;display:none;">
+      Cell reward: <span id="creward">(select a cell)</span> <div id="rewardslider"></div>
+      </div>
+</div>
    <div id="draw"></div>
    <div id="piechart-controls" style="margin-top:40px;margin-bottom:40px;">
     <canvas id="piechart" width="300" height="300">Your browser is too old!</canvas>
