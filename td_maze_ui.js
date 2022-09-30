@@ -476,6 +476,7 @@ var ErrorRates;
          * Generates n proportions with a minimum percentage gap between them
          */
         function generateRandomProportions(n, min) {
+            return Array(0.90, 0.04, 0.04, 0.02);
 
             // n random numbers 0 - 1
             let rnd = Array.apply(null, {length: n}).map(function(){ return Math.random(); });
@@ -499,6 +500,7 @@ var ErrorRates;
                     }
                 }
 
+                console.log(sortedProportions);
                 return sortedProportions;
             }
         }

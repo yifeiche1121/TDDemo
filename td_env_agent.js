@@ -59,10 +59,6 @@ class Environment{
         this.Rewards = null; // reward array
         this.Walls = null; // cell types, 0 = normal, 1 = cliff
         this.errorRates = null;
-        //this.example();
-        //getMaze();
-        //this.reset();
-        //setTimeout(this.reset, 5000);
     }
     async reset() {
         var url = document.getElementById('url').value;
@@ -91,16 +87,6 @@ class Environment{
         Rewards[20] = -1;
         Exits[this.rewardSpot] = 1;
 
-        // make some cliffs
-        //T[1*this.height] = 1;
-        //T[1*this.height+1] = 1;
-        //T[1*this.height+2] = 1;
-        //T[1*this.height+3] = 1;
-
-        //T[3*this.height+1] = 1;
-        //T[3*this.height+2] = 1;
-        //T[3*this.height+3] = 1;
-        //T[3*this.height+4] = 1;
         this.Exits = Exits;
         this.Rewards = Rewards;
         this.Walls = T;
