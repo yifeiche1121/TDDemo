@@ -81,6 +81,22 @@
   svg {
     cursor: pointer;
   }
+  [type='radio'] {
+    display: none; 
+  }
+  .btn:focus, .btn:active {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  .btn-primary:hover {
+    background-color: rgb(65, 100, 217);
+  }
+  .btn-success:hover {
+    background-color: rgb(94, 207, 69);
+  }
+  .btn-danger:hover {
+    background-color: rgb(230, 100, 100);
+  }
   </style>
   
  </head>
@@ -99,12 +115,21 @@
    <h2>Temporal Difference Learning Gridworld Demo</h2>
    <br>
     
-   <button class="btn btn-primary" onclick="simulate()" style="width:170px;height:50px;margin-bottom:5px;">Run/Stop</button>
+   <button class="btn btn-primary" id="sim" onclick="simulate()" style="width:170px;height:50px;margin-bottom:5px;">Run/Stop</button>
    <button class="btn btn-primary" onclick="tdlearn()" style="width:120px;height:50px;margin-bottom:5px;">Single Step</button>
    <button class="btn btn-danger" onclick="resetAgent()" style="width:120px;height:50px;margin-bottom:5px;">Reset agent</button>
-   <button class="btn btn-success" onclick="gofast()" style="width:120px;height:50px;margin-bottom:5px;">Fast speed</button>
-   <button class="btn btn-success" onclick="gonormal()" style="width:120px;height:50px;margin-bottom:5px;">Normal speed</button>
-   <button class="btn btn-success" onclick="goslow()" style="width:120px;height:50px;margin-bottom:5px;">Slow speed</button>
+   
+   <label class="btn btn-success" id="fast" style="width:120px;height:50px;margin-bottom:5px;padding-top:15px;">
+    <input type="radio" class="btn-success" name="options" autocomplete="off" onclick="gofast()">Fast Speed
+   </label>
+
+   <label class="btn btn-success" id="normal" style="width:120px;height:50px;margin-bottom:5px;padding-top:15px;">
+    <input type="radio" class="btn-success" name="options" autocomplete="off" checked onclick="gonormal()">Normal Speed
+   </label>
+
+   <label class="btn btn-success" id="slow" style="width:120px;height:50px;margin-bottom:5px;padding-top:15px;">
+    <input type="radio" class="btn-success" name="options" autocomplete="off" onclick="goslow()">Slow Speed
+   </label>
 
    <div  style = "margin-top: 20px;margin-bottom: 20px;"">
     Input Maze File Url:

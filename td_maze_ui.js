@@ -321,14 +321,52 @@ function downloadFile() {
     el.setAttribute("download", "maze.json");
 }
 
+var speedChecked = "";
 var goslow = function() {
+    if (speedChecked != "" && speedChecked != "slow") {
+        let btn = document.getElementById(speedChecked);
+        btn.classList.remove("active");
+    } 
+    speedChecked = "slow";
+    let btn = document.getElementById('slow');
+    btn.classList.add("active");
     steps_per_tick = 1;
+    if (sid != -1) {
+
+    } else {
+        simulate();
+    }
 }
 var gonormal = function(){
+    if (speedChecked != "" && speedChecked != "normal") {
+        let btn = document.getElementById(speedChecked);
+        btn.classList.remove("active");
+    } 
+    speedChecked = "normal";
+    let btn = document.getElementById('normal');
+    btn.classList.add("active");
     steps_per_tick = 10;
+    if (sid != -1) {
+
+    } else {
+        simulate();
+    }
 }
+
 var gofast = function() {
+    if (speedChecked != "" && speedChecked != "fast") {
+        let btn = document.getElementById(speedChecked);
+        btn.classList.remove("active");
+    } 
+    speedChecked = "fast";
+    let btn = document.getElementById('fast');
+    btn.classList.add("active");
     steps_per_tick = 25;
+    if (sid != -1) {
+
+    } else {
+        simulate();
+    }
 }
 var steps_per_tick = 1;
 var sid = -1;
@@ -357,8 +395,12 @@ var tdlearn = function() {
 }
 var simulate = function() {
     if (sid == -1) {
+        let btn = document.getElementById("sim");
+        btn.classList.add("active");
         sid = setInterval(tdlearn, 20);
     } else { 
+        let btn = document.getElementById("sim");
+        btn.classList.remove("active");
         clearInterval(sid); 
         sid = -1;
     }
