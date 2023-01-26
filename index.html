@@ -89,7 +89,7 @@
     box-shadow: none !important;
   }
   .btn-primary:hover {
-    background-color: rgb(65, 100, 217);
+    background-color: rgb(84, 154, 235);
   }
   .btn-success:hover {
     background-color: rgb(94, 207, 69);
@@ -115,19 +115,19 @@
    <h2>Temporal Difference Learning Gridworld Demo</h2>
    <br>
     
-   <button class="btn btn-primary" id="sim" onclick="simulate()" style="width:170px;height:50px;margin-bottom:5px;">Run/Stop</button>
-   <button class="btn btn-primary" onclick="tdlearn()" style="width:120px;height:50px;margin-bottom:5px;">Single Step</button>
-   <button class="btn btn-danger" onclick="resetAgent()" style="width:120px;height:50px;margin-bottom:5px;">Reset agent</button>
+   <button class="btn btn-success" id="sim" onclick="simulate()" style="width:170px;height:50px;margin-bottom:5px;">Run</button>
+   <button class="btn btn-success" id="step" onclick="step()" style="width:120px;height:50px;margin-bottom:5px;">Single Step</button>
+   <button class="btn btn-danger" id="reset" onclick="resetAgent()" style="width:120px;height:50px;margin-bottom:5px;">Reset agent</button>
    
-   <label class="btn btn-success" id="fast" style="width:120px;height:50px;margin-bottom:5px;padding-top:15px;">
+   <label class="btn btn-primary" id="fast" style="width:120px;height:50px;margin-bottom:5px;padding-top:15px;">
     <input type="radio" class="btn-success" name="options" autocomplete="off" onclick="gofast()">Fast Speed
    </label>
 
-   <label class="btn btn-success" id="normal" style="width:120px;height:50px;margin-bottom:5px;padding-top:15px;">
+   <label class="btn btn-primary active" id="normal" style="width:120px;height:50px;margin-bottom:5px;padding-top:15px;">
     <input type="radio" class="btn-success" name="options" autocomplete="off" checked onclick="gonormal()">Normal Speed
    </label>
 
-   <label class="btn btn-success" id="slow" style="width:120px;height:50px;margin-bottom:5px;padding-top:15px;">
+   <label class="btn btn-primary" id="slow" style="width:120px;height:50px;margin-bottom:5px;padding-top:15px;">
     <input type="radio" class="btn-success" name="options" autocomplete="off" onclick="goslow()">Slow Speed
    </label>
 
@@ -143,18 +143,21 @@
      <div id="gamma" style = "margin-top:20px;margin-bottom:20px;">
       Gamma discount factor: <span id="gam">0.15</span> <div id="gammaslider"></div>
       </div>
+      <div id="alpha" style = "margin-top:20px;margin-bottom:20px;">
+        Alpha learning rate: <span id="alp">0.15</span> <div id="alphaslider"></div>
+        </div>
      <div id = "editmaze" style = "margin-bottom:20px;margin-bottom:30px;">
-      Edit the Maze:
-      <button class="btn btn-primary" onclick="addRow()" style="width:110px;height:50px;margin-bottom:5px;">Add a row</button>
-      <button class="btn btn-danger" onclick="deleteRow()" style="width:120px;height:50px;margin-bottom:5px;">Delete a row</button>
-      <button id = "danger_btn" class="btn btn-primary" onclick="addCol()" style="width:110px;height:50px;margin-bottom:5px;">Add a column</button>
-      <button class="btn btn-danger" onclick="deleteCol()" style="width:120px;height:50px;margin-bottom:5px;">Delete a column</button>
+      <p>Edit the Maze:</p>
+      <button id = "addR" class="btn btn-primary" onclick="addRow()" style="width:110px;height:50px;margin-bottom:5px;">Add a row</button>
+      <button id = "delR" class="btn btn-danger" onclick="deleteRow()" style="width:120px;height:50px;margin-bottom:5px;">Delete a row</button>
+      <button id = "addC" class="btn btn-primary" onclick="addCol()" style="width:110px;height:50px;margin-bottom:5px;">Add a column</button>
+      <button id = "delC" class="btn btn-danger" onclick="deleteCol()" style="width:130px;height:50px;margin-bottom:5px;">Delete a column</button>
       <button id = "wall_btn" class="btn btn-primary" onclick="addWall()" style="width:110px;height:50px;margin-bottom:5px;">Add a wall</button>
-      <button id = "re_btn" class="btn btn-success" onclick="addReward()" style="width:110px;height:50px;margin-bottom:5px;">Edit Reward</button>
+      <button id = "re_btn" class="btn btn-success" onclick="addReward()" style="width:120px;height:50px;margin-bottom:5px;">Edit Reward</button>
     </div>
     
     <div id="rewardui" style = "margin-top:20px;margin-bottom:40px;display:none;">
-      Cell reward: <span id="creward">(select a cell)</span> <div id="rewardslider"></div>
+      Cell reward: <span id="creward"><b>(select a cell)</b></span> <div id="rewardslider"></div>
       </div>
 </div>
    <div id="draw"></div>
