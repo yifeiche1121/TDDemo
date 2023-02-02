@@ -261,6 +261,24 @@ function addWall() {
     drawGrid();
 }
 
+var list1OfButtons = ["sim", "step", "reset", "fast", "normal", "slow", 
+                      "addR", "delR", "addC", "delC", "wall_btn"];
+var list2OfButtons = ["addR", "delR", "addC", "delC", "wall_btn", "re_btn"];
+
+function disableButtons(list) {
+    for (let i = 0; i < list.length; i ++) {
+        let btn = document.getElementById(list[i]);
+        btn.classList.add("disabled");
+    }
+}
+
+function ableButtons(list) {
+    for (let i = 0; i < list.length; i ++) {
+        let btn = document.getElementById(list[i]);
+        btn.classList.remove("disabled");
+    }
+}
+
 var defaultColRBtn;
 var addRewardMode = -1;
 function addReward() {
@@ -271,7 +289,10 @@ function addReward() {
         selectedR = -1;
         $("#creward").html('<b>(select a cell)</b>');
         btn.style.backgroundColor = defaultColRBtn;
+        btn.innerHTML = "Edit Reward";
+        btn.style.width = "120px";
         sliderR.style.display = "none";
+        ableButtons(list1OfButtons);
     } else {
         defaultColRBtn = btn.style.backgroundColor;
         btn.style.backgroundColor = "#ffbc4f";
@@ -279,6 +300,7 @@ function addReward() {
         btn.style.width = "160px";
         addRewardMode = 1;
         sliderR.style.display = "block";
+        disableButtons(list1OfButtons);
     }
     state = env.startState();
     eval($("#agentspec").val())
@@ -425,6 +447,7 @@ var simulate = function() {
         let btn = document.getElementById("sim");
         btn.classList = "btn btn-danger";
         btn.innerHTML = "Stop";
+        disableButtons(list2OfButtons);
         sid = setInterval(tdlearn, 20);
     } else { 
         let btn = document.getElementById("sim");
@@ -432,10 +455,14 @@ var simulate = function() {
         btn.innerHTML = "Run";
         clearInterval(sid); 
         sid = -1;
+        ableButtons(list2OfButtons);
     }
 }
 
 function resetAgent() {
+    if (sid != -1) {
+        simulate();
+    }
     eval($("#agentspec").val())
     agent = new TDAgent(env);
     $("#gam").html(agent.gamma.toFixed(2));
