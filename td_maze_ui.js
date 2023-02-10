@@ -648,12 +648,12 @@ function start() {
     // slider sets agent alpha
     $( "#alphaslider" ).slider({
         min: 0,
-        max: 0.1,
+        max: 0.5,
         value: agent.alpha,
-        step: 0.001,
+        step: 0.01,
         slide: function(event, ui) {
             agent.alpha = ui.value;
-            $("#alp").html(ui.value.toFixed(3));
+            $("#alp").html(ui.value.toFixed(2));
         }
     });
 
@@ -727,7 +727,7 @@ async function setUploadEnv() {
         step: 0.001,
         slide: function(event, ui) {
             agent.alpha = ui.value;
-            $("#alp").html(ui.value.toFixed(3));
+            $("#alp").html(ui.value.toFixed(2));
         }
     });
 
