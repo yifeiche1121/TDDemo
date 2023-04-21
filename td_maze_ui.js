@@ -156,12 +156,12 @@ var drawGrid = function() {
             
             let grid = grids[s];
             if (env.Exits[s] == 1) {
-                grid.attr('stroke-width', '3');
+                grid.attr('stroke-width', '4');
                 grid.attr('stroke', '#fdee00');
             }
             if (s == selectedR) {
                 // highlight selectedR cell
-                grid.attr('fill', '#fff747');
+                grid.attr('fill', '#ffbc4f');
             } else {
                 grid.attr('fill', vcol); 
             }
@@ -261,6 +261,24 @@ function addWall() {
     drawGrid();
 }
 
+var list1OfButtons = ["sim", "step", "reset", "fast", "normal", "slow", 
+                      "addR", "delR", "addC", "delC", "wall_btn"];
+var list2OfButtons = ["addR", "delR", "addC", "delC", "wall_btn", "re_btn"];
+
+function disableButtons(list) {
+    for (let i = 0; i < list.length; i ++) {
+        let btn = document.getElementById(list[i]);
+        btn.classList.add("disabled");
+    }
+}
+
+function ableButtons(list) {
+    for (let i = 0; i < list.length; i ++) {
+        let btn = document.getElementById(list[i]);
+        btn.classList.remove("disabled");
+    }
+}
+
 var defaultColRBtn;
 var addRewardMode = -1;
 function addReward() {
@@ -269,14 +287,20 @@ function addReward() {
     if (addRewardMode == 1) {
         addRewardMode = -1;
         selectedR = -1;
-        $("#creward").html('(select a cell)');
+        $("#creward").html('<b>(select a cell)</b>');
         btn.style.backgroundColor = defaultColRBtn;
+        btn.innerHTML = "Edit Reward";
+        btn.style.width = "120px";
         sliderR.style.display = "none";
+        ableButtons(list1OfButtons);
     } else {
         defaultColRBtn = btn.style.backgroundColor;
         btn.style.backgroundColor = "#ffbc4f";
+        btn.innerHTML = "Exit Edit Reward Mode";
+        btn.style.width = "160px";
         addRewardMode = 1;
         sliderR.style.display = "block";
+        disableButtons(list1OfButtons);
     }
     state = env.startState();
     eval($("#agentspec").val())
@@ -291,7 +315,7 @@ var selectedR = -1;
 var cellClicked = function(s) {
     if (s == selectedR) {
         selectedR = -1; // toggle off
-        $("#creward").html('(select a cell)');
+        $("#creward").html("<b>(select a cell)</b>");
     } else {
         selectedR = s;
         $("#creward").html(env.Rewards[s].toFixed(2));
@@ -321,20 +345,83 @@ function downloadFile() {
     el.setAttribute("download", "maze.json");
 }
 
+var speedChecked = "normal";
 var goslow = function() {
+    if (speedChecked != "" && speedChecked != "slow") {
+        let btn = document.getElementById(speedChecked);
+        btn.classList.remove("active");
+    } 
+    speedChecked = "slow";
+    let btn = document.getElementById('slow');
+    btn.classList.add("active");
     steps_per_tick = 1;
+    if (sid != -1) {
+
+    } else {
+        simulate();
+    }
 }
 var gonormal = function(){
+    if (speedChecked != "" && speedChecked != "normal") {
+        let btn = document.getElementById(speedChecked);
+        btn.classList.remove("active");
+    } 
+    speedChecked = "normal";
+    let btn = document.getElementById('normal');
+    btn.classList.add("active");
     steps_per_tick = 10;
+    if (sid != -1) {
+
+    } else {
+        simulate();
+    }
 }
+
 var gofast = function() {
+    if (speedChecked != "" && speedChecked != "fast") {
+        let btn = document.getElementById(speedChecked);
+        btn.classList.remove("active");
+    } 
+    speedChecked = "fast";
+    let btn = document.getElementById('fast');
+    btn.classList.add("active");
     steps_per_tick = 25;
+    if (sid != -1) {
+
+    } else {
+        simulate();
+    }
 }
 var steps_per_tick = 1;
 var sid = -1;
 var nsteps_history = [];
 var nsteps_counter = 0;
 var nflot = 1000;
+
+var step = function() {
+    if (sid == -1) {
+        
+    } else {
+        simulate();
+    }
+    env.errorRates = ErrorRates;
+    let a = agent.getAction(state); // ask agent for an action
+    let obs = env.getLearnReward(state, a); // run it through environment dynamics
+    agent.learn(obs.rval); // allow opportunity for the agent to learn
+    state = obs.ns; // evolve environment to next state
+    nsteps_counter += 1;
+    if (typeof obs.reset_episode != 'undefined') {
+        agent.resetEpisode();
+        // record the reward achieved
+        if (nsteps_history.length >= nflot) {
+        nsteps_history = nsteps_history.slice(1);
+        }
+        nsteps_history.push(nsteps_counter);
+        nsteps_counter = 0;
+    }
+    drawGrid();
+    
+}
 var tdlearn = function() {
     env.errorRates = ErrorRates;
     for (let k = 0; k < steps_per_tick; k ++) {
@@ -357,18 +444,32 @@ var tdlearn = function() {
 }
 var simulate = function() {
     if (sid == -1) {
+        let btn = document.getElementById("sim");
+        btn.classList = "btn btn-danger";
+        btn.innerHTML = "Stop";
+        disableButtons(list2OfButtons);
         sid = setInterval(tdlearn, 20);
     } else { 
+        let btn = document.getElementById("sim");
+        btn.classList = "btn btn-success";
+        btn.innerHTML = "Run";
         clearInterval(sid); 
         sid = -1;
+        ableButtons(list2OfButtons);
     }
 }
 
 function resetAgent() {
+    if (sid != -1) {
+        simulate();
+    }
     eval($("#agentspec").val())
     agent = new TDAgent(env);
     $("#gam").html(agent.gamma.toFixed(2));
     $("#gammaslider").slider('value', agent.gamma);
+
+    $("#alp").html(agent.alpha.toFixed(2));
+    $("#alphaslider").slider('value', agent.alpha);
 
     $("#slider").slider('value', agent.epsilon);
     $("#eps").html(agent.epsilon.toFixed(2));
@@ -544,6 +645,18 @@ function start() {
         }
     });
 
+    // slider sets agent alpha
+    $( "#alphaslider" ).slider({
+        min: 0,
+        max: 0.5,
+        value: agent.alpha,
+        step: 0.01,
+        slide: function(event, ui) {
+            agent.alpha = ui.value;
+            $("#alp").html(ui.value.toFixed(2));
+        }
+    });
+
     $("#rewardslider").slider({
         min: -5,
         max: 5.1,
@@ -555,13 +668,16 @@ function start() {
             $("#creward").html(ui.value.toFixed(2));
             drawGrid();
             } else {
-            $("#creward").html('(select a cell)');
+            $("#creward").html('<b>(select a cell)</b>');
             }
         }
     });
 
     $("#gam").html(agent.gamma.toFixed(2));
     $("#gammaslider").slider('value', agent.gamma);
+
+    $("#alp").html(agent.alpha.toFixed(2));
+    $("#alphaslider").slider('value', agent.alpha);
 
     $("#eps").html(agent.epsilon.toFixed(2));
     $("#slider").slider('value', agent.epsilon);
@@ -603,6 +719,18 @@ async function setUploadEnv() {
         }
     });
 
+    // slider sets agent alpha
+    $( "#alphaslider" ).slider({
+        min: 0,
+        max: 0.1,
+        value: agent.alpha,
+        step: 0.001,
+        slide: function(event, ui) {
+            agent.alpha = ui.value;
+            $("#alp").html(ui.value.toFixed(2));
+        }
+    });
+
     $("#rewardslider").slider({
         min: -5,
         max: 5.1,
@@ -614,13 +742,16 @@ async function setUploadEnv() {
             $("#creward").html(ui.value.toFixed(2));
             drawGrid();
             } else {
-            $("#creward").html('(select a cell)');
+            $("#creward").html('<b>(select a cell)</b>');
             }
         }
     });
 
     $("#gam").html(agent.gamma.toFixed(2));
     $("#gammaslider").slider('value', agent.gamma);
+
+    $("#alp").html(agent.alpha.toFixed(2));
+    $("#alphaslider").slider('value', agent.alpha);
 
     $("#eps").html(agent.epsilon.toFixed(2));
     $("#slider").slider('value', agent.epsilon);
